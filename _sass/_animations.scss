@@ -370,117 +370,188 @@
 }
 
 // =============================================================================
-// JOURNEY ORBIT - Phase Space Trajectory Timeline
+// JOURNEY TIMELINE - Clean, minimal design
 // =============================================================================
-.journey-orbit {
+.journey {
   position: relative;
-  width: 100%;
-  min-height: 280px;
+  padding: $space-md 0;
 
-  @include respond-to(md) {
-    min-height: 320px;
-  }
-
-  &__canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-  }
-
-  &__labels {
-    position: relative;
+  &__track {
     display: flex;
     flex-direction: column;
-    gap: $space-md;
-    padding-top: $space-xl;
+    gap: $space-lg;
+    position: relative;
+    padding-left: $space-xl;
 
     @include respond-to(md) {
       flex-direction: row;
       justify-content: space-between;
-      align-items: flex-end;
-      padding-top: 180px;
-      gap: $space-sm;
+      padding-left: 0;
+      padding-top: $space-xl;
+      gap: 0;
     }
   }
 
-  &__label {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding: $space-sm $space-md;
-    background: rgba($color-bg-card, 0.8);
-    border: 1px solid $color-border;
-    border-radius: $radius-sm;
+  // The connecting line
+  &__line {
+    position: absolute;
+    background: $color-border;
+
+    // Vertical on mobile
+    left: 9px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    transform-origin: top;
+    transform: scaleY(0);
+    transition: transform 1s ease;
+
+    @include respond-to(md) {
+      // Horizontal on desktop
+      left: 0;
+      right: 0;
+      top: 9px;
+      bottom: auto;
+      width: auto;
+      height: 2px;
+      transform: scaleX(0);
+      transform-origin: left;
+    }
+
+    .journey.revealed & {
+      transform: scaleY(1);
+
+      @include respond-to(md) {
+        transform: scaleX(1);
+      }
+    }
+  }
+
+  &__node {
+    position: relative;
     opacity: 0;
-    transform: translateY(15px);
-    transition: all 0.5s ease, border-color 0.3s ease, background 0.3s ease;
-    flex: 1;
-    min-width: 0;
+    transform: translateX(-10px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+
+    @include respond-to(md) {
+      flex: 1;
+      transform: translateY(-10px);
+    }
+
+    .journey.revealed & {
+      opacity: 1;
+      transform: translate(0);
+
+      @for $i from 1 through 5 {
+        &:nth-child(#{$i + 1}) {
+          transition-delay: #{0.3 + $i * 0.15}s;
+        }
+      }
+    }
+
+    &--current {
+      .journey__dot {
+        background: $color-primary;
+        box-shadow: 0 0 0 4px rgba($color-primary, 0.2);
+        animation: pulse-ring 2s ease-in-out infinite;
+      }
+
+      .journey__card {
+        border-color: $color-primary;
+        background: rgba($color-primary, 0.05);
+      }
+
+      .journey__period {
+        color: $color-primary;
+      }
+    }
+  }
+
+  &__dot {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: $color-bg-elevated;
+    border: 2px solid $color-border;
+    border-radius: 50%;
+    z-index: 2;
+
+    // Positioned left on mobile
+    left: -$space-xl;
+    top: $space-sm;
+
+    @include respond-to(md) {
+      // Positioned top center on desktop
+      left: 50%;
+      top: -$space-xl;
+      transform: translateX(-50%);
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      background: $color-text-dim;
+      border-radius: 50%;
+      transition: background 0.3s ease;
+    }
+
+    .journey__node:hover &::after {
+      background: $color-primary;
+    }
+
+    .journey__node--current &::after {
+      background: $color-primary;
+    }
+  }
+
+  &__card {
+    background: $color-bg-card;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    padding: $space-md;
+    transition: border-color 0.3s ease, transform 0.3s ease;
 
     @include respond-to(md) {
       text-align: center;
-      max-width: 140px;
+      margin: 0 $space-xs;
     }
 
     &:hover {
       border-color: $color-primary;
-      background: rgba($color-bg-card, 1);
-    }
-
-    &--current {
-      border-color: $color-primary;
-      background: rgba($color-primary, 0.05);
-
-      .journey-orbit__period {
-        color: $color-primary;
-      }
-    }
-
-    .journey-orbit.revealed & {
-      opacity: 1;
-      transform: translateY(0);
-
-      @for $i from 1 through 5 {
-        &:nth-child(#{$i}) {
-          transition-delay: #{0.8 + $i * 0.2}s;
-        }
-      }
+      transform: translateY(-2px);
     }
   }
 
   &__period {
+    display: block;
     font-family: $font-mono;
     font-size: $text-xs;
     color: $color-text-dim;
+    margin-bottom: 2px;
   }
 
   &__title {
+    display: block;
     font-size: $text-sm;
     font-weight: 600;
     color: $color-text;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-
-    @include respond-to(md) {
-      white-space: normal;
-      font-size: $text-xs;
-    }
+    margin-bottom: 2px;
   }
 
-  &__institution {
+  &__place {
+    display: block;
     font-size: $text-xs;
     color: $color-text-muted;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  }
+}
 
-    @include respond-to(md) {
-      white-space: normal;
-    }
+@keyframes pulse-ring {
+  0%, 100% {
+    box-shadow: 0 0 0 4px rgba($color-primary, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba($color-primary, 0);
   }
 }
 

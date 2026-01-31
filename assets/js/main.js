@@ -438,200 +438,22 @@ function initSectionTitles() {
 }
 
 // -----------------------------------------------------------------------------
-// Journey Orbit - Phase Space Trajectory Timeline
+// Journey Timeline
 // -----------------------------------------------------------------------------
 function initTimeline() {
-  const container = document.querySelector('.journey-orbit');
-  if (!container) return;
+  const journey = document.querySelector('.journey');
+  if (!journey) return;
 
-  const canvas = document.getElementById('journey-canvas');
-  if (!canvas) return;
-
-  const ctx = canvas.getContext('2d');
-  const labels = container.querySelectorAll('.journey-orbit__label');
-  const numPoints = labels.length;
-
-  // Resize canvas
-  function resize() {
-    const rect = container.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = rect.height;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  // Generate trajectory points (chaotic-looking but deterministic curve)
-  function generateTrajectory() {
-    const points = [];
-    const w = canvas.width;
-    const h = canvas.height;
-    const orbHeight = Math.min(150, h * 0.45);
-    const startY = orbHeight * 0.6;
-
-    for (let i = 0; i < numPoints; i++) {
-      const t = i / (numPoints - 1);
-      const x = w * 0.08 + t * w * 0.84;
-      // Chaotic-ish trajectory with some structure
-      const phase = t * Math.PI * 1.5;
-      const y = startY + Math.sin(phase) * orbHeight * 0.4
-                + Math.sin(phase * 2.3) * orbHeight * 0.2
-                + Math.cos(phase * 0.7) * orbHeight * 0.15;
-      points.push({ x, y });
-    }
-    return points;
-  }
-
-  let points = generateTrajectory();
-  let drawProgress = 0;
-  let animating = false;
-  let currentPulse = 0;
-
-  // Smooth curve through points using bezier
-  function drawCurve(progress) {
-    if (points.length < 2) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw faint grid (phase space aesthetic)
-    ctx.strokeStyle = 'rgba(0, 212, 170, 0.03)';
-    ctx.lineWidth = 1;
-    const gridSize = 30;
-    for (let x = 0; x < canvas.width; x += gridSize) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, canvas.height);
-      ctx.stroke();
-    }
-    for (let y = 0; y < canvas.height; y += gridSize) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(canvas.width, y);
-      ctx.stroke();
-    }
-
-    // Calculate how many segments to draw based on progress
-    const totalSegments = points.length - 1;
-    const segmentsToDraw = progress * totalSegments;
-
-    // Draw trajectory trail (faded)
-    ctx.strokeStyle = 'rgba(0, 212, 170, 0.15)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
-
-    for (let i = 1; i < points.length; i++) {
-      const segmentProgress = Math.min(1, Math.max(0, segmentsToDraw - (i - 1)));
-      if (segmentProgress <= 0) break;
-
-      const prev = points[i - 1];
-      const curr = points[i];
-      const next = points[Math.min(i + 1, points.length - 1)];
-      const prev2 = points[Math.max(i - 2, 0)];
-
-      // Catmull-Rom to Bezier conversion for smooth curve
-      const cp1x = prev.x + (curr.x - prev2.x) / 6;
-      const cp1y = prev.y + (curr.y - prev2.y) / 6;
-      const cp2x = curr.x - (next.x - prev.x) / 6;
-      const cp2y = curr.y - (next.y - prev.y) / 6;
-
-      if (segmentProgress < 1) {
-        // Partial segment
-        const partialX = prev.x + (curr.x - prev.x) * segmentProgress;
-        const partialY = prev.y + (curr.y - prev.y) * segmentProgress;
-        ctx.quadraticCurveTo(cp1x, cp1y, partialX, partialY);
-      } else {
-        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, curr.x, curr.y);
-      }
-    }
-    ctx.stroke();
-
-    // Draw main trajectory line (brighter)
-    ctx.strokeStyle = 'rgba(0, 212, 170, 0.6)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
-
-    for (let i = 1; i < points.length; i++) {
-      const segmentProgress = Math.min(1, Math.max(0, segmentsToDraw - (i - 1)));
-      if (segmentProgress <= 0) break;
-
-      const prev = points[i - 1];
-      const curr = points[i];
-
-      if (segmentProgress < 1) {
-        const partialX = prev.x + (curr.x - prev.x) * segmentProgress;
-        const partialY = prev.y + (curr.y - prev.y) * segmentProgress;
-        ctx.lineTo(partialX, partialY);
-      } else {
-        ctx.lineTo(curr.x, curr.y);
-      }
-    }
-    ctx.stroke();
-
-    // Draw milestone points
-    for (let i = 0; i < points.length; i++) {
-      const segmentProgress = Math.min(1, Math.max(0, segmentsToDraw - i + 0.5));
-      if (segmentProgress <= 0) continue;
-
-      const p = points[i];
-      const isLast = i === points.length - 1;
-      const pointOpacity = Math.min(1, segmentProgress * 2);
-
-      // Glow
-      const glowSize = isLast ? 20 + Math.sin(currentPulse) * 5 : 12;
-      const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowSize);
-      gradient.addColorStop(0, `rgba(0, 212, 170, ${0.4 * pointOpacity})`);
-      gradient.addColorStop(1, 'rgba(0, 212, 170, 0)');
-      ctx.fillStyle = gradient;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, glowSize, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Point
-      const pointSize = isLast ? 6 + Math.sin(currentPulse) * 1 : 4;
-      ctx.fillStyle = `rgba(0, 212, 170, ${pointOpacity})`;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, pointSize, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Inner bright core
-      ctx.fillStyle = `rgba(255, 255, 255, ${0.8 * pointOpacity})`;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, isLast ? 3 : 2, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-
-  function animate() {
-    if (!animating) return;
-
-    if (drawProgress < 1) {
-      drawProgress = Math.min(1, drawProgress + 0.015);
-    }
-
-    currentPulse += 0.08;
-    points = generateTrajectory(); // Recalculate for resize
-    drawCurve(drawProgress);
-
-    requestAnimationFrame(animate);
-  }
-
-  // Initial draw
-  drawCurve(0);
-
-  // Observe for scroll trigger
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      if (entry.isIntersecting && !animating) {
-        container.classList.add('revealed');
-        animating = true;
-        requestAnimationFrame(animate);
+      if (entry.isIntersecting) {
+        entry.target.classList.add('revealed');
         observer.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.3 });
+  }, { threshold: 0.2 });
 
-  observer.observe(container);
+  observer.observe(journey);
 }
 
 // -----------------------------------------------------------------------------

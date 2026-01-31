@@ -1,11 +1,14 @@
-<div class="journey-orbit">
-  <canvas id="journey-canvas" class="journey-orbit__canvas"></canvas>
-  <div class="journey-orbit__labels">
+<div class="journey">
+  <div class="journey__track">
+    <div class="journey__line"></div>
     {% for item in site.data.site_data.timeline reversed %}
-    <div class="journey-orbit__label{% if item.current %} journey-orbit__label--current{% endif %}" data-index="{{ forloop.index0 }}">
-      <span class="journey-orbit__period">{{ item.period }}</span>
-      <span class="journey-orbit__title">{{ item.title }}</span>
-      <span class="journey-orbit__institution">{{ item.institution }}</span>
+    <div class="journey__node{% if item.current %} journey__node--current{% endif %}">
+      <div class="journey__dot"></div>
+      <div class="journey__card">
+        <span class="journey__period">{{ item.period }}</span>
+        <span class="journey__title">{{ item.title }}</span>
+        <span class="journey__place">{{ item.institution }}, {{ item.location }}</span>
+      </div>
     </div>
     {% endfor %}
   </div>

@@ -590,16 +590,17 @@ function initJourneyGlobe() {
     .arcDashLength(d => d.dashLength || 0.5)
     .arcDashGap(d => d.dashGap || 0.1)
     .arcDashAnimateTime(d => d.animateTime || 2000)
-    // Labels - no dot (we use points), lifted above surface
-    .labelsData([])
-    .labelLat('lat')
-    .labelLng('lng')
-    .labelText('name')
-    .labelSize(1.0)
-    .labelDotRadius(0) // No label dot - we have our own points
-    .labelAltitude(0.01) // Lift slightly above surface
-    .labelColor(() => 'rgba(255, 255, 255, 0.9)')
-    .labelResolution(3)
+    // HTML Labels - rendered on top of WebGL, never occluded by arcs
+    .htmlElementsData([])
+    .htmlLat('lat')
+    .htmlLng('lng')
+    .htmlAltitude(0.02)
+    .htmlElement(d => {
+      const el = document.createElement('div');
+      el.className = 'globe-label';
+      el.innerHTML = d.name.replace(/\n/g, '<br>');
+      return el;
+    })
     (container);
 
   // Resize handler
@@ -627,7 +628,7 @@ function initJourneyGlobe() {
       () => {
         globe.pointsData([pointsData[0]]);
         globe.ringsData([{ lat: locations.chaibasa.lat, lng: locations.chaibasa.lng }]);
-        globe.labelsData([{ ...locations.chaibasa, name: 'Chaibasa\nHometown' }]);
+        globe.htmlElementsData([{ ...locations.chaibasa, name: 'Chaibasa\nHometown' }]);
         setTimeout(() => { currentPhase++; runAnimation(); }, 3500);
       },
 
@@ -654,7 +655,7 @@ function initJourneyGlobe() {
 
         setTimeout(() => {
           globe.pointsData([pointsData[0], pointsData[1]]);
-          globe.labelsData([{ ...locations.delhi, name: 'B.Sc. Physics\nUniv. of Delhi' }]);
+          globe.htmlElementsData([{ ...locations.delhi, name: 'B.Sc. Physics\nUniv. of Delhi' }]);
         }, 2200);
 
         setTimeout(() => { currentPhase++; runAnimation(); }, 4000);
@@ -682,7 +683,7 @@ function initJourneyGlobe() {
 
         setTimeout(() => {
           globe.pointsData([pointsData[0], pointsData[1], pointsData[2]]);
-          globe.labelsData([{ ...locations.chennai, name: 'M.Sc. & JRF\nIIT Madras, Chennai' }]);
+          globe.htmlElementsData([{ ...locations.chennai, name: 'M.Sc. & JRF\nIIT Madras, Chennai' }]);
         }, 2200);
 
         setTimeout(() => { currentPhase++; runAnimation(); }, 4500);
@@ -691,7 +692,7 @@ function initJourneyGlobe() {
       // Phase 3: Pause - appreciate India journey, then dramatic zoom out
       () => {
         // Show all India locations
-        globe.labelsData([
+        globe.htmlElementsData([
           { ...locations.chaibasa, name: 'Hometown' },
           { ...locations.delhi, name: 'B.Sc.' },
           { ...locations.chennai, name: 'M.Sc. & JRF' }
@@ -699,7 +700,7 @@ function initJourneyGlobe() {
 
         // Long pause to appreciate the India journey
         setTimeout(() => {
-          globe.labelsData([]); // Clear for clean zoom
+          globe.htmlElementsData([]); // Clear for clean zoom
         }, 2500);
 
         // Slow, dramatic zoom out
@@ -742,7 +743,7 @@ function initJourneyGlobe() {
         globe.pointOfView({ lat: 41.8, lng: -72.2, altitude: 0.6 }, 3500);
 
         setTimeout(() => {
-          globe.labelsData([{ ...locations.storrs, name: 'PhD Physics\nUConn, Storrs CT' }]);
+          globe.htmlElementsData([{ ...locations.storrs, name: 'PhD Physics\nUConn, Storrs CT' }]);
         }, 3000);
 
         setTimeout(() => { currentPhase++; runAnimation(); }, 6000);
@@ -753,7 +754,7 @@ function initJourneyGlobe() {
         globe.ringsData([]);
 
         // Show full journey with all details
-        globe.labelsData([
+        globe.htmlElementsData([
           { ...locations.chaibasa, name: 'Hometown\nChaibasa, Jharkhand' },
           { ...locations.delhi, name: 'B.Sc. Physics\nUniv. of Delhi' },
           { ...locations.chennai, name: 'M.Sc. & JRF\nIIT Madras, Chennai' },

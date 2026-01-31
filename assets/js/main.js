@@ -35,6 +35,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Floating tags
   initFloatingTags();
+
+  // Journey globe visualization
+  initJourneyGlobe();
 });
 
 // -----------------------------------------------------------------------------
@@ -521,6 +524,223 @@ function initStaggeredReveals() {
 function initFloatingTags() {
   const heroTags = document.querySelectorAll('.hero__interests .tag');
   heroTags.forEach(tag => tag.classList.add('tag--float'));
+}
+
+// -----------------------------------------------------------------------------
+// Journey Globe Visualization
+// -----------------------------------------------------------------------------
+function initJourneyGlobe() {
+  const container = document.getElementById('globe-container');
+  if (!container || typeof Globe === 'undefined') return;
+
+  // Location coordinates
+  const locations = {
+    chaibasa: { lat: 22.55, lng: 85.80, name: 'Chaibasa', year: '2017' },
+    delhi: { lat: 28.61, lng: 77.21, name: 'Delhi', year: '2017-2020' },
+    chennai: { lat: 13.08, lng: 80.27, name: 'Chennai', year: '2021-2024' },
+    connecticut: { lat: 41.81, lng: -72.25, name: 'Connecticut', year: '2024-Present' }
+  };
+
+  // Arc data - will be populated during animation
+  const arcsData = [];
+
+  // Points data
+  const pointsData = [
+    { ...locations.chaibasa, size: 0.4, color: '#00d4aa' },
+    { ...locations.delhi, size: 0.25, color: '#666' },
+    { ...locations.chennai, size: 0.25, color: '#666' },
+    { ...locations.connecticut, size: 0.5, color: '#00d4aa' }
+  ];
+
+  // Initialize globe
+  const globe = Globe()
+    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
+    .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+    .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
+    .showAtmosphere(true)
+    .atmosphereColor('#00d4aa')
+    .atmosphereAltitude(0.15)
+    // Points (locations)
+    .pointsData([])
+    .pointLat('lat')
+    .pointLng('lng')
+    .pointAltitude(0.01)
+    .pointRadius('size')
+    .pointColor('color')
+    // Arcs (journey paths)
+    .arcsData([])
+    .arcStartLat(d => d.startLat)
+    .arcStartLng(d => d.startLng)
+    .arcEndLat(d => d.endLat)
+    .arcEndLng(d => d.endLng)
+    .arcColor(d => d.color)
+    .arcAltitude(d => d.altitude || 0.15)
+    .arcStroke(d => d.stroke || 0.5)
+    .arcDashLength(d => d.dashLength || 0.5)
+    .arcDashGap(d => d.dashGap || 0.1)
+    .arcDashAnimateTime(d => d.animateTime || 2000)
+    // Labels
+    .labelsData([])
+    .labelLat('lat')
+    .labelLng('lng')
+    .labelText('name')
+    .labelSize(1.2)
+    .labelDotRadius(0.4)
+    .labelColor(() => '#00d4aa')
+    .labelResolution(2)
+    (container);
+
+  // Resize handler
+  function handleResize() {
+    const width = container.offsetWidth;
+    const height = container.offsetHeight;
+    globe.width(width).height(height);
+  }
+  handleResize();
+  window.addEventListener('resize', handleResize);
+
+  // Animation state
+  let animationStarted = false;
+  let currentPhase = 0;
+
+  // Initial camera position - focused on India
+  globe.pointOfView({ lat: 20, lng: 80, altitude: 2.5 }, 0);
+
+  // Animation sequence
+  function runAnimation() {
+    if (!animationStarted) return;
+
+    const phases = [
+      // Phase 0: Show Chaibasa (origin point)
+      () => {
+        globe.pointsData([pointsData[0]]);
+        globe.labelsData([{ ...locations.chaibasa, name: 'Chaibasa\n(Origin)' }]);
+        setTimeout(() => { currentPhase++; runAnimation(); }, 1500);
+      },
+
+      // Phase 1: Arc to Delhi
+      () => {
+        const arc1 = {
+          startLat: locations.chaibasa.lat,
+          startLng: locations.chaibasa.lng,
+          endLat: locations.delhi.lat,
+          endLng: locations.delhi.lng,
+          color: ['#00d4aa', '#00d4aa'],
+          altitude: 0.08,
+          stroke: 0.4,
+          dashLength: 0.6,
+          dashGap: 0.1,
+          animateTime: 1500
+        };
+        arcsData.push(arc1);
+        globe.arcsData([...arcsData]);
+
+        setTimeout(() => {
+          globe.pointsData([pointsData[0], pointsData[1]]);
+          globe.labelsData([
+            { ...locations.chaibasa, name: 'Chaibasa' },
+            { ...locations.delhi, name: 'Delhi\nB.Sc.' }
+          ]);
+        }, 1200);
+
+        setTimeout(() => { currentPhase++; runAnimation(); }, 2000);
+      },
+
+      // Phase 2: Arc to Chennai
+      () => {
+        const arc2 = {
+          startLat: locations.delhi.lat,
+          startLng: locations.delhi.lng,
+          endLat: locations.chennai.lat,
+          endLng: locations.chennai.lng,
+          color: ['#00d4aa', '#00d4aa'],
+          altitude: 0.1,
+          stroke: 0.4,
+          dashLength: 0.6,
+          dashGap: 0.1,
+          animateTime: 1500
+        };
+        arcsData.push(arc2);
+        globe.arcsData([...arcsData]);
+
+        setTimeout(() => {
+          globe.pointsData([pointsData[0], pointsData[1], pointsData[2]]);
+          globe.labelsData([
+            { ...locations.chaibasa, name: 'Chaibasa' },
+            { ...locations.delhi, name: 'Delhi' },
+            { ...locations.chennai, name: 'Chennai\nM.Sc. & JRF' }
+          ]);
+        }, 1200);
+
+        setTimeout(() => { currentPhase++; runAnimation(); }, 2500);
+      },
+
+      // Phase 3: Zoom out and rotate to show Atlantic
+      () => {
+        globe.pointOfView({ lat: 30, lng: 0, altitude: 3.5 }, 2500);
+        setTimeout(() => { currentPhase++; runAnimation(); }, 3000);
+      },
+
+      // Phase 4: The shooting star to Connecticut!
+      () => {
+        const shootingStar = {
+          startLat: locations.chennai.lat,
+          startLng: locations.chennai.lng,
+          endLat: locations.connecticut.lat,
+          endLng: locations.connecticut.lng,
+          color: ['#00d4aa', '#ffffff', '#00d4aa'],
+          altitude: 0.4, // High arc for dramatic effect
+          stroke: 1.2,
+          dashLength: 0.3,
+          dashGap: 0.05,
+          animateTime: 3000
+        };
+        arcsData.push(shootingStar);
+        globe.arcsData([...arcsData]);
+
+        // Add all points and final labels
+        setTimeout(() => {
+          globe.pointsData(pointsData);
+          globe.labelsData([
+            { ...locations.chaibasa, name: 'Chaibasa' },
+            { ...locations.delhi, name: 'Delhi' },
+            { ...locations.chennai, name: 'Chennai' },
+            { ...locations.connecticut, name: 'Connecticut\nPhD (Current)' }
+          ]);
+        }, 2500);
+
+        // Final camera position - centered on Atlantic to show full journey
+        setTimeout(() => {
+          globe.pointOfView({ lat: 35, lng: -20, altitude: 2.8 }, 2000);
+        }, 3500);
+
+        setTimeout(() => { currentPhase++; runAnimation(); }, 5000);
+      },
+
+      // Phase 5: Slow auto-rotate
+      () => {
+        globe.controls().autoRotate = true;
+        globe.controls().autoRotateSpeed = 0.3;
+      }
+    ];
+
+    if (currentPhase < phases.length) {
+      phases[currentPhase]();
+    }
+  }
+
+  // Observe for scroll trigger
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !animationStarted) {
+        animationStarted = true;
+        setTimeout(runAnimation, 500);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+
+  observer.observe(container);
 }
 
 // -----------------------------------------------------------------------------

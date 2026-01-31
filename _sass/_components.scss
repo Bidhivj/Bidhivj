@@ -672,3 +672,95 @@
     }
   }
 }
+
+// =============================================================================
+// JOURNEY GLOBE VISUALIZATION
+// =============================================================================
+.journey-globe {
+  margin: $space-2xl 0;
+  position: relative;
+
+  &__container {
+    width: 100%;
+    max-width: 600px;
+    height: 400px;
+    margin: 0 auto;
+    position: relative;
+    border-radius: $radius-lg;
+    overflow: hidden;
+
+    @include respond-to(md) {
+      height: 500px;
+    }
+
+    // Globe.gl renders here
+    canvas {
+      display: block;
+    }
+  }
+
+  &__labels {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    display: none; // Hidden initially, shown via JS when globe is ready
+  }
+
+  &__label {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+
+    &.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    &[data-location="chaibasa"] {
+      color: $color-primary;
+    }
+
+    &[data-location="delhi"],
+    &[data-location="chennai"] {
+      color: $color-text-muted;
+    }
+
+    &[data-location="connecticut"] {
+      color: $color-primary;
+
+      .journey-globe__dot {
+        width: 12px;
+        height: 12px;
+        box-shadow: 0 0 20px $color-primary, 0 0 40px $color-primary-glow;
+      }
+    }
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    background: currentColor;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &__text {
+    font-family: $font-mono;
+    font-size: $text-xs;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &__caption {
+    text-align: center;
+    margin-top: $space-lg;
+    font-family: $font-mono;
+    font-size: $text-sm;
+    color: $color-text-dim;
+    font-style: italic;
+  }
+}

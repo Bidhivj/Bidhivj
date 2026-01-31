@@ -449,9 +449,9 @@ function initPhaseSpaceVisualization() {
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   const isLowEnd = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2;
 
-  let numParticles = 3000;
-  if (isMobile) numParticles = 1500;
-  if (isLowEnd) numParticles = 1000;
+  let numParticles = 500;
+  if (isMobile) numParticles = 300;
+  if (isLowEnd) numParticles = 200;
 
   const viz = new StandardMapVisualization(canvas, {
     alpha: 2.0,

@@ -145,12 +145,14 @@
 .hero {
   position: relative;
   overflow: hidden;
-  padding: calc($nav-height + $space-xl) 0 $space-2xl;
+  padding: calc($nav-height + $space-md) 0 $space-lg;
   border-bottom: 1px solid $color-border;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 
   @include respond-to(md) {
-    padding: calc($nav-height + $space-2xl) 0 $space-3xl;
+    padding: calc($nav-height + $space-lg) 0 $space-xl;
   }
 
   &__bg {
@@ -173,11 +175,13 @@
     padding: 0 $space-lg;
     display: flex;
     flex-direction: column;
-    gap: $space-2xl;
+    gap: $space-lg;
+    flex: 1;
+    justify-content: center;
 
     @include respond-to(md) {
       padding: 0 $space-xl;
-      gap: $space-3xl;
+      gap: $space-xl;
     }
   }
 
@@ -265,11 +269,11 @@
   // About section: photo + bio
   &__about {
     display: grid;
-    gap: $space-xl;
+    gap: $space-md;
 
     @include respond-to(md) {
-      grid-template-columns: 180px 1fr;
-      gap: $space-2xl;
+      grid-template-columns: 160px 1fr;
+      gap: $space-lg;
       align-items: start;
     }
   }
@@ -284,8 +288,8 @@
   }
 
   &__photo-frame {
-    width: 150px;
-    height: 150px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
     border: 2px solid $color-primary;
     display: flex;
@@ -296,8 +300,8 @@
     overflow: hidden;
 
     @include respond-to(md) {
-      width: 180px;
-      height: 180px;
+      width: 150px;
+      height: 150px;
     }
 
     &::before {
@@ -348,7 +352,7 @@
       color: $color-text-muted;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      margin-bottom: $space-md;
+      margin-bottom: $space-sm;
     }
   }
 
@@ -359,7 +363,7 @@
       color: $color-text-muted;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      margin-bottom: $space-lg;
+      margin-bottom: $space-sm;
     }
   }
 }

@@ -374,20 +374,20 @@
 // =============================================================================
 .journey {
   position: relative;
-  padding: $space-md 0;
+  padding: $space-xs 0;
 
   &__track {
     display: flex;
     flex-direction: column;
-    gap: $space-lg;
+    gap: $space-md;
     position: relative;
-    padding-left: $space-xl;
+    padding-left: $space-lg;
 
     @include respond-to(md) {
       flex-direction: row;
       justify-content: space-between;
       padding-left: 0;
-      padding-top: $space-xl;
+      padding-top: $space-lg;
       gap: 0;
     }
   }
@@ -509,12 +509,13 @@
     background: $color-bg-card;
     border: 1px solid $color-border;
     border-radius: $radius-md;
-    padding: $space-md;
+    padding: $space-sm $space-md;
     transition: border-color 0.3s ease, transform 0.3s ease;
 
     @include respond-to(md) {
       text-align: center;
       margin: 0 $space-xs;
+      padding: $space-sm;
     }
 
     &:hover {

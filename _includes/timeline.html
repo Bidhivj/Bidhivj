@@ -1,0 +1,9 @@
+<div class="timeline-horizontal">
+  {% for item in site.data.site_data.timeline %}
+  <div class="timeline-horizontal__item{% if item.current %} timeline-horizontal__item--current{% endif %}">
+    <span class="timeline-horizontal__period">{{ item.period }}</span>
+    <span class="timeline-horizontal__title">{{ item.title }}</span>
+    <span class="timeline-horizontal__institution">{{ item.institution }}</span>
+  </div>
+  {% endfor %}
+</div>

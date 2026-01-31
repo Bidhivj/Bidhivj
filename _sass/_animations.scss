@@ -1,0 +1,202 @@
+// =============================================================================
+// ANIMATIONS - Phase Space Visualization
+// Based on standard map dynamics from Bidhi's Phys. Rev. E paper
+// =============================================================================
+
+// Phase space canvas (standard map / kicked rotor visualization)
+.phase-space-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.75;
+  cursor: crosshair;  // Indicate clickable for tracer feature
+
+  // Respect reduced motion preference - hide animated canvas
+  @media (prefers-reduced-motion: reduce) {
+    // Canvas will show static frame via JS
+  }
+}
+
+// Geometric background - subtle grid overlay for depth
+.geometric-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+
+  // Grid overlay - represents phase space coordinates
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0, 212, 170, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 212, 170, 0.02) 1px, transparent 1px);
+    background-size: 50px 50px;
+    opacity: 0.6;
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
+  }
+}
+
+// =============================================================================
+// CHAOS CONTROL SLIDER
+// =============================================================================
+
+.chaos-control {
+  position: absolute;
+  bottom: $space-lg;
+  right: $space-lg;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: $space-sm;
+  opacity: 0.6;
+  transition: opacity $transition-base;
+
+  &:hover,
+  &:focus-within {
+    opacity: 1;
+  }
+
+  @include respond-to(md) {
+    bottom: $space-xl;
+    right: $space-xl;
+  }
+
+  &__label {
+    display: flex;
+    align-items: center;
+    gap: $space-md;
+    font-family: $font-mono;
+    font-size: $text-xs;
+    color: $color-text-muted;
+  }
+
+  &__title {
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: $color-primary;
+  }
+
+  &__value {
+    color: $color-text;
+  }
+
+  &__slider {
+    width: 120px;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: $color-border;
+    border-radius: $radius-full;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    @include respond-to(md) {
+      width: 150px;
+    }
+
+    &::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      background: $color-primary;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 0 10px $color-primary-glow;
+      transition: transform $transition-fast, box-shadow $transition-fast;
+    }
+
+    &::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      background: $color-primary;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 0 10px $color-primary-glow;
+    }
+
+    &:hover::-webkit-slider-thumb,
+    &:focus::-webkit-slider-thumb {
+      transform: scale(1.2);
+      box-shadow: 0 0 15px $color-primary;
+    }
+
+    &:hover::-moz-range-thumb,
+    &:focus::-moz-range-thumb {
+      transform: scale(1.2);
+      box-shadow: 0 0 15px $color-primary;
+    }
+  }
+
+  &__hint {
+    font-family: $font-mono;
+    font-size: 0.65rem;
+    color: $color-text-dim;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
+
+// Subtle glow effect for hero
+.glow-effect {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(0, 212, 170, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: glow-pulse 8s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+// Entry animations
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fade-in-up 0.6s ease forwards;
+}
+
+@keyframes fade-in-up {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-delay-1 { animation-delay: 0.1s; }
+.fade-in-delay-2 { animation-delay: 0.2s; }
+.fade-in-delay-3 { animation-delay: 0.3s; }
+.fade-in-delay-4 { animation-delay: 0.4s; }
+.fade-in-delay-5 { animation-delay: 0.5s; }
+
+// Scroll reveal animation
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+
+  &.revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

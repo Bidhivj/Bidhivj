@@ -1,0 +1,140 @@
+// =============================================================================
+// BASE STYLES
+// =============================================================================
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: $nav-height + 20px;
+}
+
+body {
+  font-family: $font-body;
+  font-size: $text-base;
+  line-height: 1.6;
+  color: $color-text;
+  background-color: $color-bg;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+// Typography
+h1, h2, h3, h4, h5, h6 {
+  font-family: $font-heading;
+  font-weight: 600;
+  line-height: 1.2;
+  color: $color-text;
+  letter-spacing: -0.02em;
+}
+
+h1 { font-size: $text-4xl; }
+h2 { font-size: $text-3xl; }
+h3 { font-size: $text-2xl; }
+h4 { font-size: $text-xl; }
+h5 { font-size: $text-lg; }
+h6 { font-size: $text-base; }
+
+p {
+  margin-bottom: $space-md;
+  color: $color-text-muted;
+}
+
+a {
+  color: $color-primary;
+  text-decoration: none;
+  transition: color $transition-fast, opacity $transition-fast;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+// Selection
+::selection {
+  background: $color-primary;
+  color: $color-bg;
+}
+
+// Focus styles for accessibility
+:focus-visible {
+  outline: 2px solid $color-primary;
+  outline-offset: 2px;
+}
+
+// Scrollbar styling
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: $color-bg;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $color-border;
+  border-radius: $radius-full;
+
+  &:hover {
+    background: $color-text-dim;
+  }
+}
+
+// Utility classes
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.container {
+  width: 100%;
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 0 $space-lg;
+
+  @include respond-to(md) {
+    padding: 0 $space-xl;
+  }
+}
+
+.text-center { text-align: center; }
+.text-primary { color: $color-primary; }
+.text-muted { color: $color-text-muted; }
+
+// Section styling
+.section {
+  padding: $space-3xl 0;
+
+  @include respond-to(md) {
+    padding: $space-4xl 0;
+  }
+}
+
+.section-title {
+  font-size: $text-2xl;
+  margin-bottom: $space-2xl;
+  display: flex;
+  align-items: center;
+  gap: $space-md;
+
+  &::before {
+    content: '';
+    width: 4px;
+    height: 1.2em;
+    background: $color-primary;
+    border-radius: $radius-sm;
+  }
+}

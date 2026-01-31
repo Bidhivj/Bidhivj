@@ -1,0 +1,42 @@
+# Site settings
+title: Bidhi Vijaywargia
+description: PhD Student in Quantum Physics at University of Connecticut
+tagline: "Bridging quantum and classical worlds in chaotic systems"
+url: "https://bidhivj.github.io"
+baseurl: ""
+
+# Author info
+author:
+  name: Bidhi Vijaywargia
+  email: bidhi.vijaywargia@uconn.edu
+  position: PhD Student
+  institution: University of Connecticut
+  advisor: Prof. Lea Santos
+
+# Social links
+social:
+  google_scholar: "https://scholar.google.com/citations?user=VPXoIIwAAAAJ&hl=en&oi=ao"
+  orcid: "https://orcid.org/0009-0009-0491-3513"
+  linkedin: "https://www.linkedin.com/in/bidhi-vijaywargia-62373520b/"
+  research_group: "https://lea-santos.scholar.uconn.edu/"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+sass:
+  sass_dir: _sass
+  style: compressed
+
+# Exclude from build
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - vendor
+
+# Plugins
+plugins:
+  - jekyll-seo-tag
+
+# Collections (if needed later)
+collections_dir: collections

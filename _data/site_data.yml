@@ -1,0 +1,189 @@
+# =============================================================================
+# BIDHI VIJAYWARGIA - PORTFOLIO DATA
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# TIMELINE / EDUCATION
+# -----------------------------------------------------------------------------
+timeline:
+  - period: "2024 - Present"
+    title: "PhD Student"
+    institution: "University of Connecticut"
+    location: "Storrs, CT"
+    advisor: "Prof. Lea Santos"
+    current: true
+
+  - period: "2023 - 2024"
+    title: "Junior Research Fellow"
+    institution: "IIT Madras"
+    location: "Chennai"
+    advisor: "Dr. Arul Lakshminarayan"
+
+  - period: "2021 - 2023"
+    title: "M.Sc. Physics"
+    institution: "IIT Madras"
+    location: "Chennai"
+    advisor: "Dr. Arul Lakshminarayan"
+
+  - period: "2017 - 2020"
+    title: "B.Sc. Physics (Honours)"
+    institution: "University of Delhi"
+    location: "New Delhi"
+
+# -----------------------------------------------------------------------------
+# RESEARCH INTERESTS
+# -----------------------------------------------------------------------------
+research_interests:
+  - "Quantum Chaos"
+  - "Quantum-Classical Correspondence"
+  - "Open Quantum Systems"
+  - "Quantum Many-Body Systems"
+  - "Quantum Channels"
+  - "Quantum Information"
+
+# -----------------------------------------------------------------------------
+# CURRENT RESEARCH (at UConn with Prof. Santos)
+# -----------------------------------------------------------------------------
+current_research:
+  - title: "Quantum Phase Transitions"
+    description: "Quantum phase transition and excited state phase transition in spin systems."
+    icon: "fa-atom"
+
+  - title: "Quantum-Classical Correspondence"
+    description: "Quantum-classical correspondence in spin systems with long-range interactions."
+    icon: "fa-network-wired"
+
+  - title: "Chaos and Stickiness"
+    description: "The effect of classical chaos and stickiness on quantum dynamics."
+    icon: "fa-hurricane"
+
+  - title: "Open Quantum Systems"
+    description: "Open quantum systems and non-Hermitian matrices. Dissipative quantum chaos."
+    icon: "fa-circle-notch"
+
+# -----------------------------------------------------------------------------
+# PAST RESEARCH
+# -----------------------------------------------------------------------------
+past_research:
+  - title: "Quantum-Classical Correspondence of Channels"
+    description: "Spectral properties of quantum and classical channels corresponding to chaotic systems like standard map, baker's map, and cat map. Quantum scars in open quantum dynamical systems that display chaos in the classical limit. Spatiotemporal correlation functions for quantum and classical many-body chaotic systems."
+    institution: "IIT Madras (Junior Research Fellow)"
+
+  - title: "An Interplay of Quantum Chaos and Quantum Channels"
+    description: "Reviewed the relation between chaos and entanglement entropy for coupled quantum standard map (kicked rotor). Explored the spectral properties of the quantum channel corresponding to a coupled quantum standard map and presented links between the spectral properties and the underlying classical dynamics."
+    institution: "M.Sc. Thesis, IIT Madras"
+    thesis_url: "/assets/docs/MSc_Thesis.pdf"
+
+# -----------------------------------------------------------------------------
+# PUBLICATIONS
+# -----------------------------------------------------------------------------
+publications:
+  - title: "Beyond Ginibre statistics in open Floquet chaotic systems with localized leaks"
+    authors:
+      - name: "Edson M. Signor"
+      - name: "Miguel A. Prado Reynoso"
+      - name: "Bidhi Vijaywargia"
+        highlight: true
+      - name: "Sandra D. Prado"
+      - name: "Lea F. Santos"
+    journal: "arXiv preprint"
+    year: 2025
+    status: "published"
+    arxiv: "https://arxiv.org/abs/2512.09038"
+    summary: "How driven quantum systems with classical chaos and localized openness deviate from Ginibre ensemble predictions."
+
+  - title: "Quantum-classical correspondence in quantum channels"
+    authors:
+      - name: "Bidhi Vijaywargia"
+        highlight: true
+      - name: "Arul Lakshminarayan"
+    journal: "Physical Review E"
+    volume: "111"
+    pages: "014210"
+    year: 2025
+    status: "published"
+    arxiv: "https://arxiv.org/abs/2407.14067"
+    doi: "https://doi.org/10.1103/PhysRevE.111.014210"
+    summary: "Spectral properties of quantum channels for standard map, baker's map, and cat map. Correspondence between quantum channel eigenmodes and classical Koopman eigenfunctions."
+
+# -----------------------------------------------------------------------------
+# TEACHING
+# -----------------------------------------------------------------------------
+teaching:
+  current:
+    - title: "Lab Instructor"
+      course: "General Physics II"
+      institution: "University of Connecticut"
+      period: "Jan 2025 - Present"
+      description: ""
+
+  past:
+    - title: "Teaching Assistant"
+      course: "Physics for Engineers II"
+      institution: "University of Connecticut"
+      period: "Aug - Dec 2024"
+      description: ""
+
+    - title: "Teaching Assistant"
+      course: "Quantum Computation and Quantum Information"
+      institution: "IIT Madras"
+      period: "Jul - Nov 2023"
+      description: ""
+
+  outreach:
+    - title: "Volunteer Science Teacher"
+      organization: "Ek-Ummid NGO"
+      period: "2021 - 2023"
+      description: "Online middle-school science teacher for underprivileged students."
+      highlight: true
+
+# -----------------------------------------------------------------------------
+# AWARDS & ACHIEVEMENTS
+# -----------------------------------------------------------------------------
+awards:
+  - title: "Summer Research Fellowship Award"
+    description: "Offered to outstanding new physics graduate students"
+    institution: "University of Connecticut"
+    year: 2025
+    highlight: true
+
+  - title: "V. Kalyanasundram Memorial Prize"
+    description: "Best Woman in M.Sc. Physics (based on CGPA)"
+    institution: "IIT Madras"
+    year: 2023
+    highlight: true
+
+  - title: "Usha Krishnaswamy Scholarship"
+    description: "Top-ranking female student based on CGPA"
+    institution: "IIT Madras"
+    year: 2022
+
+  - title: "MCM Scholarship"
+    description: "Top 10% of class, all four semesters"
+    institution: "IIT Madras"
+    year: "2021-2023"
+
+# National competitive exams (displayed separately with percentile visual)
+exam_rankings:
+  - title: "JEST Physics"
+    description: "Joint Entrance Screening Test for PhD admission"
+    rank: 74
+    total: "6,000"
+    percentile: 1.2
+    year: 2021
+
+  - title: "IIT JAM Physics"
+    description: "Joint Admission Test for M.Sc. at IITs"
+    rank: 119
+    total: "15,000"
+    percentile: 0.8
+    year: 2021
+
+# -----------------------------------------------------------------------------
+# PERSONAL
+# -----------------------------------------------------------------------------
+personal:
+  interests:
+    - "Badminton"
+    - "Learning Piano"
+  bio_snippet: "From Chaibasa, a small town in Jharkhand where few pursue research and even fewer women do. First-generation college student. I hope to inspire younger generations to explore physics."

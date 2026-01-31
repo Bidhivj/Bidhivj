@@ -1,0 +1,88 @@
+<section class="hero" id="home">
+  <div class="hero__bg">
+    <!-- Phase space visualization: Standard map (kicked rotor) dynamics
+         from "Quantum-classical correspondence in quantum channels"
+         Phys. Rev. E 111, 014210 (2025) -->
+    <canvas id="phase-space-canvas" class="phase-space-canvas" aria-hidden="true"></canvas>
+    <div class="geometric-bg">
+      <!-- Subtle grid overlay retained for depth -->
+    </div>
+  </div>
+
+  <!-- Chaos parameter slider -->
+  <div class="chaos-control" aria-label="Chaos parameter control">
+    <div class="chaos-control__label">
+      <span class="chaos-control__title">Chaos</span>
+      <span class="chaos-control__value">α = <span id="alpha-value">2.0</span></span>
+    </div>
+    <input
+      type="range"
+      id="alpha-slider"
+      class="chaos-control__slider"
+      min="0.5"
+      max="8"
+      step="0.1"
+      value="2.0"
+      aria-label="Adjust chaos parameter alpha"
+    >
+    <div class="chaos-control__hint">Click anywhere to trace an orbit</div>
+  </div>
+
+  <div class="hero__content">
+    <!-- Top: Name, title, links -->
+    <div class="hero__header">
+      <div class="hero__intro">
+        <h1 class="hero__title">{{ site.author.name }}</h1>
+        <p class="hero__meta">
+          {{ site.author.position }}, <a href="{{ site.social.research_group }}" target="_blank" rel="noopener">{{ site.author.institution }}</a><br>
+          Advisor: {{ site.author.advisor }}
+        </p>
+        <p class="hero__tagline">"{{ site.tagline }}"</p>
+      </div>
+
+      <div class="hero__links">
+        <a href="{{ '/assets/docs/CV_updated.pdf' | relative_url }}" class="hero__link" target="_blank">
+          <i class="ai ai-cv"></i> CV
+        </a>
+        <a href="{{ site.social.google_scholar }}" class="hero__link" target="_blank" rel="noopener">
+          <i class="ai ai-google-scholar"></i> Scholar
+        </a>
+        <a href="mailto:{{ site.author.email }}" class="hero__link">
+          <i class="fas fa-envelope"></i> Contact
+        </a>
+      </div>
+    </div>
+
+    <!-- About content -->
+    <div class="hero__about">
+      <div class="hero__photo">
+        <div class="hero__photo-frame">
+          <!-- Photo placeholder - replace with actual image when available -->
+          <i class="fas fa-user placeholder-icon"></i>
+          <!-- <img src="{{ '/assets/images/profile.jpg' | relative_url }}" alt="Bidhi Vijaywargia"> -->
+        </div>
+      </div>
+
+      <div class="hero__bio-section">
+        <p class="hero__bio">
+          How does chaos affect entanglement in coupled systems? Why do we see traces of classical orbits in quantum states? What is the relationship between quantum physics and classical chaos? I work with open dynamical systems that display chaos in the classical limit—kicked rotors, cat maps, baker's maps—studying the correspondence between quantum channels and their classical counterparts through spectral properties and Husimi distributions.
+        </p>
+
+        <div class="hero__interests">
+          <h4>Research Interests</h4>
+          <div class="tags">
+            {% for interest in site.data.site_data.research_interests %}
+            <span class="tag">{{ interest }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="hero__timeline">
+      <h4>Journey</h4>
+      {% include timeline.html %}
+    </div>
+  </div>
+</section>

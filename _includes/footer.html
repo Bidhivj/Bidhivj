@@ -1,0 +1,30 @@
+<footer class="footer">
+  <div class="container">
+    <div class="footer__content">
+      <div class="footer__info">
+        <p><strong>{{ site.author.name }}</strong></p>
+        <p>{{ site.author.position }} &bull; {{ site.author.institution }}</p>
+        <p><a href="mailto:{{ site.author.email }}">{{ site.author.email }}</a></p>
+      </div>
+
+      <div class="footer__social">
+        <a href="{{ site.social.google_scholar }}" class="footer__social-link" aria-label="Google Scholar" target="_blank" rel="noopener">
+          <i class="ai ai-google-scholar"></i>
+        </a>
+        <a href="{{ site.social.orcid }}" class="footer__social-link" aria-label="ORCID" target="_blank" rel="noopener">
+          <i class="ai ai-orcid"></i>
+        </a>
+        <a href="{{ site.social.linkedin }}" class="footer__social-link" aria-label="LinkedIn" target="_blank" rel="noopener">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+        <a href="{{ '/assets/docs/CV_updated.pdf' | relative_url }}" class="footer__social-link" aria-label="Download CV" target="_blank">
+          <i class="ai ai-cv"></i>
+        </a>
+      </div>
+    </div>
+
+    <p class="footer__credits text-center" style="margin-top: 1.5rem;">
+      &copy; {{ 'now' | date: "%Y" }} {{ site.author.name }} &bull; Built with Jekyll
+    </p>
+  </div>
+</footer>

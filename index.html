@@ -1,0 +1,180 @@
+---
+layout: default
+title: Bidhi Vijaywargia | Quantum Physics PhD Student
+---
+
+{% include hero.html %}
+
+<!-- Research Section -->
+<section class="section" id="research" style="background: #0d0d0d;">
+  <div class="container">
+    <h2 class="section-title">Research</h2>
+
+    <h3 style="font-size: 1.25rem; color: #00d4aa; margin-bottom: 1.5rem;">Current Research</h3>
+
+    <div class="research-grid">
+      {% for research in site.data.site_data.current_research %}
+      <article class="research-card reveal">
+        <div class="research-card__icon">
+          <i class="fas {{ research.icon }}"></i>
+        </div>
+        <h4 class="research-card__title">{{ research.title }}</h4>
+        <p class="research-card__description">{{ research.description }}</p>
+      </article>
+      {% endfor %}
+    </div>
+
+    <!-- Past Research -->
+    <div class="past-research">
+      <button class="past-research__toggle" onclick="togglePastResearch(this)">
+        <span>Past Research</span>
+        <i class="fas fa-chevron-down"></i>
+      </button>
+
+      <div class="past-research__content">
+        <div class="past-research__list">
+          {% for research in site.data.site_data.past_research %}
+          <div class="past-research__item">
+            <h4>{{ research.title }}</h4>
+            <p>{{ research.description }}</p>
+            {% if research.institution or research.thesis_url %}
+            <div style="margin-top: 0.5rem;">
+              {% if research.institution %}
+              <span class="institution">{{ research.institution }}</span>
+              {% endif %}
+              {% if research.thesis_url %}
+              <a href="{{ research.thesis_url | relative_url }}" target="_blank" style="margin-left: 1rem; font-size: 0.85rem;">
+                <i class="fas fa-file-pdf"></i> Thesis
+              </a>
+              {% endif %}
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Publications Section -->
+<section class="section" id="publications">
+  <div class="container">
+    <h2 class="section-title">Publications</h2>
+
+    <div class="publications-list">
+      {% for pub in site.data.site_data.publications %}
+        {% include publication-card.html pub=pub %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Teaching Section -->
+<section class="section" id="teaching" style="background: #0d0d0d;">
+  <div class="container">
+    <h2 class="section-title">Teaching</h2>
+
+    <p style="max-width: 700px; margin-bottom: 2rem; font-size: 1.1rem;">
+      Teaching is integral to my growth as a physicist. I believe in making complex concepts
+      accessible while maintaining rigor, and I'm committed to creating inclusive learning environments.
+    </p>
+
+    <div class="teaching-grid">
+      {% for position in site.data.site_data.teaching.current %}
+      <div class="teaching-card teaching-card--highlight">
+        <span class="teaching-card__label">Current</span>
+        <h4 class="teaching-card__title">{{ position.title }}</h4>
+        <p class="teaching-card__course">{{ position.course }}</p>
+        <p class="teaching-card__meta">{{ position.institution }} &bull; {{ position.period }}</p>
+      </div>
+      {% endfor %}
+
+      {% for position in site.data.site_data.teaching.past %}
+      <div class="teaching-card">
+        <span class="teaching-card__label">Past</span>
+        <h4 class="teaching-card__title">{{ position.title }}</h4>
+        <p class="teaching-card__course">{{ position.course }}</p>
+        <p class="teaching-card__meta">{{ position.institution }} &bull; {{ position.period }}</p>
+      </div>
+      {% endfor %}
+
+      {% for outreach in site.data.site_data.teaching.outreach %}
+      <div class="teaching-card teaching-card--outreach">
+        <span class="teaching-card__label">Outreach</span>
+        <h4 class="teaching-card__title">{{ outreach.title }}</h4>
+        <p class="teaching-card__course">{{ outreach.organization }}</p>
+        <p class="teaching-card__meta">{{ outreach.period }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Awards Section -->
+<section class="section" id="awards">
+  <div class="container">
+    <h2 class="section-title">Awards & Achievements</h2>
+
+    <div class="awards-grid">
+      {% for award in site.data.site_data.awards %}
+      <div class="award{% if award.highlight %} award--highlight{% endif %}">
+        <div class="award__icon">
+          <i class="fas fa-trophy"></i>
+        </div>
+        <h4 class="award__title">{{ award.title }}</h4>
+        <p class="award__description">{{ award.description }}</p>
+        <p class="award__meta">
+          {% if award.institution %}{{ award.institution }} &bull; {% endif %}{{ award.year }}
+        </p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- National Competitive Exams -->
+    <div class="exam-rankings">
+      <h3 class="exam-rankings__title">National Competitive Exams</h3>
+      <p class="exam-rankings__subtitle">India-wide entrance tests for graduate physics programs</p>
+      <div class="exam-rankings__grid">
+        {% for exam in site.data.site_data.exam_rankings %}
+        <div class="exam-ranking" data-rank="{{ exam.rank }}" data-total="{{ exam.total }}" data-percentile="{{ exam.percentile }}">
+          <div class="exam-ranking__label">{{ exam.title }}</div>
+          <div class="exam-ranking__dots"></div>
+          <div class="exam-ranking__result">
+            <span class="exam-ranking__percentile">Top {{ exam.percentile }}%</span>
+            <span class="exam-ranking__context">Bidhi: Rank {{ exam.rank }} of {{ exam.total }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Personal Section -->
+<section class="section" id="personal" style="background: #0d0d0d;">
+  <div class="container">
+    <h2 class="section-title">Beyond Physics</h2>
+
+    <div class="personal__content">
+      <p class="personal__bio">
+        {{ site.data.site_data.personal.bio_snippet }}
+      </p>
+
+      <div class="personal__interests">
+        {% for interest in site.data.site_data.personal.interests %}
+        <div class="personal__interest">
+          {% if interest == "Badminton" %}
+          <i class="fas fa-table-tennis-paddle-ball"></i>
+          {% elsif interest == "Learning Piano" %}
+          <i class="fas fa-music"></i>
+          {% else %}
+          <i class="fas fa-star"></i>
+          {% endif %}
+          <span>{{ interest }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>

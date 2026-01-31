@@ -1,0 +1,10 @@
+---
+# Main stylesheet - Jekyll processes this file
+---
+
+// Import all partials
+@import "variables";
+@import "base";
+@import "layout";
+@import "components";
+@import "animations";

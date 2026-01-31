@@ -310,7 +310,7 @@
     background: linear-gradient(
       45deg,
       transparent 40%,
-      rgba(255, 255, 255, 0.15) 50%,
+      rgba(255, 255, 255, 0.2) 50%,
       transparent 60%
     );
     transform: translateX(-100%);
@@ -318,7 +318,12 @@
   }
 
   .award:hover &::before {
-    animation: shine 1.5s ease forwards;
+    animation: shine 1s ease forwards;
+  }
+
+  // Highlighted awards get auto-shimmer on reveal
+  .award--highlight.revealed &::before {
+    animation: shine 1.2s ease 0.5s forwards;
   }
 }
 

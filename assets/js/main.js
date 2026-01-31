@@ -499,6 +499,14 @@ function initStaggeredReveals() {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add('revealed');
+
+        // Add revealed class to each child with staggered delay (for shimmer effect)
+        Array.from(entry.target.children).forEach((child, i) => {
+          setTimeout(() => {
+            child.classList.add('revealed');
+          }, i * 100 + 300);
+        });
+
         observer.unobserve(entry.target);
       }
     });

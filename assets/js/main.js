@@ -533,12 +533,12 @@ function initJourneyGlobe() {
   const container = document.getElementById('globe-container');
   if (!container || typeof Globe === 'undefined') return;
 
-  // Location coordinates
+  // Location coordinates (Storrs, CT is the specific destination)
   const locations = {
     chaibasa: { lat: 22.55, lng: 85.80, name: 'Chaibasa', year: '2017' },
     delhi: { lat: 28.61, lng: 77.21, name: 'Delhi', year: '2017-2020' },
     chennai: { lat: 13.08, lng: 80.27, name: 'Chennai', year: '2021-2024' },
-    connecticut: { lat: 41.81, lng: -72.25, name: 'Connecticut', year: '2024-Present' }
+    storrs: { lat: 41.8084, lng: -72.2495, name: 'Storrs, CT', year: '2024-Present' }
   };
 
   // Arc data - will be populated during animation
@@ -549,7 +549,7 @@ function initJourneyGlobe() {
     { ...locations.chaibasa, size: 0.4, color: '#00d4aa' },
     { ...locations.delhi, size: 0.25, color: '#666' },
     { ...locations.chennai, size: 0.25, color: '#666' },
-    { ...locations.connecticut, size: 0.5, color: '#00d4aa' }
+    { ...locations.storrs, size: 0.5, color: '#00d4aa' }
   ];
 
   // Initialize globe
@@ -603,15 +603,15 @@ function initJourneyGlobe() {
   let animationStarted = false;
   let currentPhase = 0;
 
-  // Initial camera position - focused on India
-  globe.pointOfView({ lat: 20, lng: 80, altitude: 2.5 }, 0);
+  // Initial camera position - zoomed tight on India
+  globe.pointOfView({ lat: 22, lng: 82, altitude: 1.5 }, 0);
 
   // Animation sequence
   function runAnimation() {
     if (!animationStarted) return;
 
     const phases = [
-      // Phase 0: Show Chaibasa (origin point)
+      // Phase 0: Show Chaibasa (origin point) - tight on India
       () => {
         globe.pointsData([pointsData[0]]);
         globe.labelsData([{ ...locations.chaibasa, name: 'Chaibasa\n(Origin)' }]);
@@ -626,11 +626,11 @@ function initJourneyGlobe() {
           endLat: locations.delhi.lat,
           endLng: locations.delhi.lng,
           color: ['#00d4aa', '#00d4aa'],
-          altitude: 0.08,
-          stroke: 0.4,
+          altitude: 0.05,
+          stroke: 0.5,
           dashLength: 0.6,
           dashGap: 0.1,
-          animateTime: 1500
+          animateTime: 1200
         };
         arcsData.push(arc1);
         globe.arcsData([...arcsData]);
@@ -641,9 +641,9 @@ function initJourneyGlobe() {
             { ...locations.chaibasa, name: 'Chaibasa' },
             { ...locations.delhi, name: 'Delhi\nB.Sc.' }
           ]);
-        }, 1200);
+        }, 1000);
 
-        setTimeout(() => { currentPhase++; runAnimation(); }, 2000);
+        setTimeout(() => { currentPhase++; runAnimation(); }, 1800);
       },
 
       // Phase 2: Arc to Chennai
@@ -654,11 +654,11 @@ function initJourneyGlobe() {
           endLat: locations.chennai.lat,
           endLng: locations.chennai.lng,
           color: ['#00d4aa', '#00d4aa'],
-          altitude: 0.1,
-          stroke: 0.4,
+          altitude: 0.06,
+          stroke: 0.5,
           dashLength: 0.6,
           dashGap: 0.1,
-          animateTime: 1500
+          animateTime: 1200
         };
         arcsData.push(arc2);
         globe.arcsData([...arcsData]);
@@ -670,57 +670,73 @@ function initJourneyGlobe() {
             { ...locations.delhi, name: 'Delhi' },
             { ...locations.chennai, name: 'Chennai\nM.Sc. & JRF' }
           ]);
-        }, 1200);
+        }, 1000);
 
+        setTimeout(() => { currentPhase++; runAnimation(); }, 2000);
+      },
+
+      // Phase 3: ZOOM OUT - dramatic reveal of the whole globe
+      () => {
+        globe.pointOfView({ lat: 25, lng: 40, altitude: 4 }, 2000);
         setTimeout(() => { currentPhase++; runAnimation(); }, 2500);
       },
 
-      // Phase 3: Zoom out and rotate to show Atlantic
+      // Phase 4: PAN across to show Americas while launching the shooting star
       () => {
-        globe.pointOfView({ lat: 30, lng: 0, altitude: 3.5 }, 2500);
-        setTimeout(() => { currentPhase++; runAnimation(); }, 3000);
-      },
-
-      // Phase 4: The shooting star to Connecticut!
-      () => {
+        // Start the shooting star arc
         const shootingStar = {
           startLat: locations.chennai.lat,
           startLng: locations.chennai.lng,
-          endLat: locations.connecticut.lat,
-          endLng: locations.connecticut.lng,
+          endLat: locations.storrs.lat,
+          endLng: locations.storrs.lng,
           color: ['#00d4aa', '#ffffff', '#00d4aa'],
-          altitude: 0.4, // High arc for dramatic effect
-          stroke: 1.2,
-          dashLength: 0.3,
-          dashGap: 0.05,
-          animateTime: 3000
+          altitude: 0.5, // High dramatic arc
+          stroke: 1.5,
+          dashLength: 0.25,
+          dashGap: 0.03,
+          animateTime: 3500
         };
         arcsData.push(shootingStar);
         globe.arcsData([...arcsData]);
 
-        // Add all points and final labels
-        setTimeout(() => {
-          globe.pointsData(pointsData);
-          globe.labelsData([
-            { ...locations.chaibasa, name: 'Chaibasa' },
-            { ...locations.delhi, name: 'Delhi' },
-            { ...locations.chennai, name: 'Chennai' },
-            { ...locations.connecticut, name: 'Connecticut\nPhD (Current)' }
-          ]);
-        }, 2500);
+        // Pan across the globe following the arc
+        globe.pointOfView({ lat: 35, lng: -40, altitude: 3.5 }, 3000);
 
-        // Final camera position - centered on Atlantic to show full journey
-        setTimeout(() => {
-          globe.pointOfView({ lat: 35, lng: -20, altitude: 2.8 }, 2000);
-        }, 3500);
-
-        setTimeout(() => { currentPhase++; runAnimation(); }, 5000);
+        setTimeout(() => { currentPhase++; runAnimation(); }, 3500);
       },
 
-      // Phase 5: Slow auto-rotate
+      // Phase 5: ZOOM IN on Storrs - the destination
       () => {
-        globe.controls().autoRotate = true;
-        globe.controls().autoRotateSpeed = 0.3;
+        // Add final point and labels
+        globe.pointsData(pointsData);
+        globe.labelsData([
+          { ...locations.storrs, name: 'Storrs, CT\nPhD (Current)' }
+        ]);
+
+        // Zoom in tight on Storrs
+        globe.pointOfView({ lat: 41.8, lng: -72.2, altitude: 1.8 }, 2500);
+
+        setTimeout(() => { currentPhase++; runAnimation(); }, 3500);
+      },
+
+      // Phase 6: Final state - show full journey with gentle rotation
+      () => {
+        // Show all labels
+        globe.labelsData([
+          { ...locations.chaibasa, name: 'Chaibasa' },
+          { ...locations.delhi, name: 'Delhi' },
+          { ...locations.chennai, name: 'Chennai' },
+          { ...locations.storrs, name: 'Storrs, CT' }
+        ]);
+
+        // Zoom out a bit to show context, gentle auto-rotate
+        setTimeout(() => {
+          globe.pointOfView({ lat: 40, lng: -60, altitude: 2.5 }, 2000);
+          setTimeout(() => {
+            globe.controls().autoRotate = true;
+            globe.controls().autoRotateSpeed = 0.2;
+          }, 2500);
+        }, 1000);
       }
     ];
 

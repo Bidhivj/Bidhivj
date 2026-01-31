@@ -544,13 +544,16 @@ function initJourneyGlobe() {
   // Arc data - will be populated during animation
   const arcsData = [];
 
-  // Points data
+  // Points data - origin and destination prominent, waypoints subtle
   const pointsData = [
-    { ...locations.chaibasa, size: 0.4, color: '#00d4aa' },
-    { ...locations.delhi, size: 0.25, color: '#666' },
-    { ...locations.chennai, size: 0.25, color: '#666' },
-    { ...locations.storrs, size: 0.5, color: '#00d4aa' }
+    { ...locations.chaibasa, size: 0.3, color: '#00d4aa' },
+    { ...locations.delhi, size: 0.15, color: '#888' },
+    { ...locations.chennai, size: 0.15, color: '#888' },
+    { ...locations.storrs, size: 0.35, color: '#00d4aa' }
   ];
+
+  // Ring data for pulsing effect on key locations
+  const ringsData = [];
 
   // Initialize globe
   const globe = Globe()
@@ -559,14 +562,22 @@ function initJourneyGlobe() {
     .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
     .showAtmosphere(true)
     .atmosphereColor('#00d4aa')
-    .atmosphereAltitude(0.15)
+    .atmosphereAltitude(0.12)
     // Points (locations)
     .pointsData([])
     .pointLat('lat')
     .pointLng('lng')
-    .pointAltitude(0.01)
+    .pointAltitude(0.005)
     .pointRadius('size')
     .pointColor('color')
+    // Rings (pulse effect)
+    .ringsData([])
+    .ringLat('lat')
+    .ringLng('lng')
+    .ringColor(() => t => `rgba(0, 212, 170, ${1 - t})`)
+    .ringMaxRadius(3)
+    .ringPropagationSpeed(2)
+    .ringRepeatPeriod(1500)
     // Arcs (journey paths)
     .arcsData([])
     .arcStartLat(d => d.startLat)
@@ -579,15 +590,16 @@ function initJourneyGlobe() {
     .arcDashLength(d => d.dashLength || 0.5)
     .arcDashGap(d => d.dashGap || 0.1)
     .arcDashAnimateTime(d => d.animateTime || 2000)
-    // Labels
+    // Labels - no dot (we use points), lifted above surface
     .labelsData([])
     .labelLat('lat')
     .labelLng('lng')
     .labelText('name')
-    .labelSize(1.2)
-    .labelDotRadius(0.4)
-    .labelColor(() => '#00d4aa')
-    .labelResolution(2)
+    .labelSize(1.0)
+    .labelDotRadius(0) // No label dot - we have our own points
+    .labelAltitude(0.01) // Lift slightly above surface
+    .labelColor(() => 'rgba(255, 255, 255, 0.9)')
+    .labelResolution(3)
     (container);
 
   // Resize handler
@@ -603,140 +615,155 @@ function initJourneyGlobe() {
   let animationStarted = false;
   let currentPhase = 0;
 
-  // Initial camera position - zoomed very tight on India
-  globe.pointOfView({ lat: 22, lng: 82, altitude: 0.8 }, 0);
+  // Initial camera position - zoomed very tight on eastern India
+  globe.pointOfView({ lat: 23, lng: 84, altitude: 0.7 }, 0);
 
-  // Animation sequence
+  // Animation sequence - refined timing and labels
   function runAnimation() {
     if (!animationStarted) return;
 
     const phases = [
-      // Phase 0: Show Chaibasa (origin point) - very tight on India
+      // Phase 0: Show Chaibasa with pulsing ring
       () => {
         globe.pointsData([pointsData[0]]);
-        globe.labelsData([{ ...locations.chaibasa, name: 'Chaibasa\n(Origin)' }]);
-        setTimeout(() => { currentPhase++; runAnimation(); }, 1500);
+        globe.ringsData([{ lat: locations.chaibasa.lat, lng: locations.chaibasa.lng }]);
+        globe.labelsData([{ ...locations.chaibasa, name: 'Chaibasa' }]);
+        setTimeout(() => { currentPhase++; runAnimation(); }, 2000);
       },
 
-      // Phase 1: Arc to Delhi (University of Delhi)
+      // Phase 1: Arc to Delhi
       () => {
+        globe.ringsData([]); // Stop pulsing
         const arc1 = {
           startLat: locations.chaibasa.lat,
           startLng: locations.chaibasa.lng,
           endLat: locations.delhi.lat,
           endLng: locations.delhi.lng,
-          color: ['#00d4aa', '#00d4aa'],
-          altitude: 0.03,
-          stroke: 0.5,
-          dashLength: 0.6,
-          dashGap: 0.1,
-          animateTime: 1200
+          color: ['rgba(0,212,170,0.8)', 'rgba(0,212,170,0.8)'],
+          altitude: 0.02,
+          stroke: 0.4,
+          dashLength: 0.8,
+          dashGap: 0.05,
+          animateTime: 1500
         };
         arcsData.push(arc1);
         globe.arcsData([...arcsData]);
 
+        // Pan slightly to keep both in view
+        globe.pointOfView({ lat: 25, lng: 82, altitude: 0.9 }, 1200);
+
         setTimeout(() => {
           globe.pointsData([pointsData[0], pointsData[1]]);
-          globe.labelsData([
-            { ...locations.chaibasa, name: 'Chaibasa' },
-            { ...locations.delhi, name: 'Univ. of Delhi\nB.Sc. Physics' }
-          ]);
-        }, 1000);
+          globe.labelsData([{ ...locations.delhi, name: 'Delhi' }]);
+        }, 1300);
 
-        setTimeout(() => { currentPhase++; runAnimation(); }, 1800);
+        setTimeout(() => { currentPhase++; runAnimation(); }, 2200);
       },
 
-      // Phase 2: Arc to Chennai (IIT Madras)
+      // Phase 2: Arc to Chennai
       () => {
         const arc2 = {
           startLat: locations.delhi.lat,
           startLng: locations.delhi.lng,
           endLat: locations.chennai.lat,
           endLng: locations.chennai.lng,
-          color: ['#00d4aa', '#00d4aa'],
-          altitude: 0.04,
-          stroke: 0.5,
-          dashLength: 0.6,
-          dashGap: 0.1,
-          animateTime: 1200
+          color: ['rgba(0,212,170,0.8)', 'rgba(0,212,170,0.8)'],
+          altitude: 0.03,
+          stroke: 0.4,
+          dashLength: 0.8,
+          dashGap: 0.05,
+          animateTime: 1500
         };
         arcsData.push(arc2);
         globe.arcsData([...arcsData]);
 
+        // Pan down to follow
+        globe.pointOfView({ lat: 20, lng: 80, altitude: 1.0 }, 1200);
+
         setTimeout(() => {
           globe.pointsData([pointsData[0], pointsData[1], pointsData[2]]);
-          globe.labelsData([
-            { ...locations.chaibasa, name: 'Chaibasa' },
-            { ...locations.delhi, name: 'Univ. of Delhi' },
-            { ...locations.chennai, name: 'IIT Madras\nM.Sc. & JRF' }
-          ]);
-        }, 1000);
+          globe.labelsData([{ ...locations.chennai, name: 'Chennai' }]);
+        }, 1300);
 
-        setTimeout(() => { currentPhase++; runAnimation(); }, 2000);
-      },
-
-      // Phase 3: ZOOM OUT - dramatic reveal of the whole globe
-      () => {
-        globe.pointOfView({ lat: 25, lng: 40, altitude: 4 }, 2000);
         setTimeout(() => { currentPhase++; runAnimation(); }, 2500);
       },
 
-      // Phase 4: PAN across to show Americas while launching the shooting star
+      // Phase 3: Pause to show India journey complete, then ZOOM OUT
       () => {
-        // Start the shooting star arc
+        // Show all India locations briefly
+        globe.labelsData([
+          { ...locations.chaibasa, name: 'Chaibasa' },
+          { ...locations.delhi, name: 'Delhi' },
+          { ...locations.chennai, name: 'Chennai' }
+        ]);
+
+        // Dramatic pause, then zoom out
+        setTimeout(() => {
+          globe.labelsData([]); // Clear labels for clean zoom
+          globe.pointOfView({ lat: 20, lng: 30, altitude: 3.5 }, 2500);
+        }, 1200);
+
+        setTimeout(() => { currentPhase++; runAnimation(); }, 4000);
+      },
+
+      // Phase 4: Launch the shooting star!
+      () => {
         const shootingStar = {
           startLat: locations.chennai.lat,
           startLng: locations.chennai.lng,
           endLat: locations.storrs.lat,
           endLng: locations.storrs.lng,
-          color: ['#00d4aa', '#ffffff', '#00d4aa'],
-          altitude: 0.5, // High dramatic arc
-          stroke: 1.5,
-          dashLength: 0.25,
-          dashGap: 0.03,
-          animateTime: 3500
+          color: ['#00d4aa', '#66ffe0', '#ffffff', '#66ffe0', '#00d4aa'],
+          altitude: 0.6,
+          stroke: 2.0,
+          dashLength: 0.2,
+          dashGap: 0.02,
+          animateTime: 4000
         };
         arcsData.push(shootingStar);
         globe.arcsData([...arcsData]);
 
-        // Pan across the globe following the arc
-        globe.pointOfView({ lat: 35, lng: -40, altitude: 3.5 }, 3000);
+        // Slow pan following the arc across the Atlantic
+        globe.pointOfView({ lat: 30, lng: -30, altitude: 3.0 }, 3500);
 
-        setTimeout(() => { currentPhase++; runAnimation(); }, 3500);
+        setTimeout(() => { currentPhase++; runAnimation(); }, 4500);
       },
 
-      // Phase 5: ZOOM IN tight on Storrs - the destination
+      // Phase 5: Zoom in on Storrs with pulsing ring
       () => {
-        // Add final point and labels
         globe.pointsData(pointsData);
-        globe.labelsData([
-          { ...locations.storrs, name: 'UConn\nPhD Physics' }
-        ]);
+        globe.ringsData([{ lat: locations.storrs.lat, lng: locations.storrs.lng }]);
 
-        // Zoom in very tight on Storrs
-        globe.pointOfView({ lat: 41.8, lng: -72.2, altitude: 0.8 }, 2500);
+        // Zoom in on Storrs
+        globe.pointOfView({ lat: 41.8, lng: -72.2, altitude: 0.6 }, 2500);
 
-        setTimeout(() => { currentPhase++; runAnimation(); }, 4000);
+        setTimeout(() => {
+          globe.labelsData([{ ...locations.storrs, name: 'Storrs, CT' }]);
+        }, 2000);
+
+        setTimeout(() => { currentPhase++; runAnimation(); }, 4500);
       },
 
-      // Phase 6: Final state - show full journey with gentle rotation
+      // Phase 6: Final - pull back to show complete journey
       () => {
-        // Show all labels with universities
+        globe.ringsData([]); // Stop pulsing
+
+        // Show university names
         globe.labelsData([
-          { ...locations.chaibasa, name: 'Chaibasa' },
+          { ...locations.chaibasa, name: 'Origin' },
           { ...locations.delhi, name: 'Univ. of Delhi' },
           { ...locations.chennai, name: 'IIT Madras' },
           { ...locations.storrs, name: 'UConn' }
         ]);
 
-        // Zoom out to show full journey, gentle auto-rotate
+        // Pull back to show the full journey
+        globe.pointOfView({ lat: 30, lng: -20, altitude: 2.5 }, 3000);
+
+        // Start gentle rotation after settling
         setTimeout(() => {
-          globe.pointOfView({ lat: 35, lng: -40, altitude: 2.8 }, 2500);
-          setTimeout(() => {
-            globe.controls().autoRotate = true;
-            globe.controls().autoRotateSpeed = 0.15;
-          }, 3000);
-        }, 1500);
+          globe.controls().autoRotate = true;
+          globe.controls().autoRotateSpeed = 0.12;
+        }, 4000);
       }
     ];
 

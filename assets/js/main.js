@@ -241,7 +241,8 @@ function initExamRankings() {
       particles.push({
         baseX, baseY,
         x: baseX, y: baseY,
-        vx: 0, vy: 0,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
         offsetX: 0, offsetY: 0,
         isSurvivor: survivors.has(i),
         isBidhi: i === bidhiIndex,
@@ -249,12 +250,15 @@ function initExamRankings() {
         eliminatedAt: 0,
         scale: 1,
         alpha: 1,
-        // Physics properties for survivors
+        // Physics - more pronounced motion
         angle: Math.random() * Math.PI * 2,
-        angularVel: (Math.random() - 0.5) * 0.02,
-        orbitRadius: Math.random() * 2 + 1,
+        angularVel: (Math.random() - 0.5) * 0.08,  // Faster rotation
+        orbitRadius: Math.random() * 6 + 3,        // Larger orbit (3-9px)
         breathePhase: Math.random() * Math.PI * 2,
-        breatheSpeed: 0.03 + Math.random() * 0.02
+        breatheSpeed: 0.08 + Math.random() * 0.04,  // Faster breathing
+        wobbleX: Math.random() * Math.PI * 2,
+        wobbleY: Math.random() * Math.PI * 2,
+        wobbleSpeed: 0.05 + Math.random() * 0.03
       });
     }
 
@@ -272,16 +276,32 @@ function initExamRankings() {
 
       for (const p of particles) {
         if (p.isSurvivor && !p.eliminated) {
-          // Survivors have gentle floating motion
-          if (phase >= 1) {
-            // Orbital drift
-            p.angle += p.angularVel;
-            p.offsetX = Math.cos(p.angle) * p.orbitRadius;
-            p.offsetY = Math.sin(p.angle) * p.orbitRadius;
+          // Survivors have organic floating motion that intensifies through phases
+          const phaseMultiplier = phase === 0 ? 0.3 : phase === 1 ? 0.7 : phase === 2 ? 1.0 : 1.2;
 
-            // Breathing scale
-            p.breathePhase += p.breatheSpeed;
-            p.scale = 1 + Math.sin(p.breathePhase) * 0.15;
+          // Orbital drift - circular motion around home position
+          p.angle += p.angularVel * phaseMultiplier;
+          const orbitX = Math.cos(p.angle) * p.orbitRadius * phaseMultiplier;
+          const orbitY = Math.sin(p.angle) * p.orbitRadius * phaseMultiplier;
+
+          // Wobble - additional organic jitter using Lissajous-like curves
+          p.wobbleX += p.wobbleSpeed * phaseMultiplier;
+          p.wobbleY += p.wobbleSpeed * 1.3 * phaseMultiplier; // Different frequency for organic feel
+          const wobbleX = Math.sin(p.wobbleX) * 3 * phaseMultiplier;
+          const wobbleY = Math.cos(p.wobbleY) * 2.5 * phaseMultiplier;
+
+          // Combine movements
+          p.offsetX = orbitX + wobbleX;
+          p.offsetY = orbitY + wobbleY;
+
+          // Breathing scale - particles pulse like they're alive
+          p.breathePhase += p.breatheSpeed * phaseMultiplier;
+          const breatheAmount = phase >= 3 ? 0.35 : 0.2; // More dramatic in final phase
+          p.scale = 1 + Math.sin(p.breathePhase) * breatheAmount;
+
+          // Bidhi gets extra emphasis
+          if (p.isBidhi && phase >= 1) {
+            p.scale *= 1.15;
           }
 
           // Smooth position update
@@ -322,11 +342,13 @@ function initExamRankings() {
       // Draw survivors (not Bidhi)
       for (const p of particles) {
         if (p.isSurvivor && !p.isBidhi) {
-          const glow = phase >= 1 ? 0.3 : 0;
-          if (glow > 0) {
-            ctx.fillStyle = `rgba(0, 212, 170, ${glow * 0.5})`;
+          const glowIntensity = phase >= 3 ? 0.5 : phase >= 1 ? 0.3 : 0;
+          // Pulsing glow in final phase
+          const pulseFactor = phase >= 3 ? 1 + Math.sin(time * 2 + p.breathePhase) * 0.2 : 1;
+          if (glowIntensity > 0) {
+            ctx.fillStyle = `rgba(0, 212, 170, ${glowIntensity * 0.4 * pulseFactor})`;
             ctx.beginPath();
-            ctx.arc(p.x, p.y, baseSize * p.scale * 2, 0, Math.PI * 2);
+            ctx.arc(p.x, p.y, baseSize * p.scale * 2.5 * pulseFactor, 0, Math.PI * 2);
             ctx.fill();
           }
           ctx.fillStyle = phase >= 1 ? 'rgba(0, 212, 170, 0.9)' : 'rgba(100, 100, 100, 0.8)';
@@ -374,8 +396,16 @@ function initExamRankings() {
         ctx.arc(centerX, centerY, currentRadius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Pulsing ring
-        const pulse = 1 + Math.sin(time * 3) * 0.015;
+        // Pulsing ring - more pronounced breathing
+        const pulse = 1 + Math.sin(time * 2.5) * 0.03;
+        const ringGlow = 0.3 + Math.sin(time * 3) * 0.15;
+        // Outer glow ring
+        ctx.strokeStyle = `rgba(0, 212, 170, ${ringGlow})`;
+        ctx.lineWidth = 8 + zoomProgress * 4;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, currentRadius * pulse * 1.02, 0, Math.PI * 2);
+        ctx.stroke();
+        // Core ring
         ctx.strokeStyle = '#00d4aa';
         ctx.lineWidth = 2 + zoomProgress * 2;
         ctx.beginPath();
@@ -818,10 +848,10 @@ function initJourneyGlobe() {
       () => {
         globe.ringsData([]);
         globe.htmlElementsData([
-          { ...locations.chaibasa, name: 'Hometown' },
-          { ...locations.delhi, name: 'B.Sc.' },
-          { ...locations.chennai, name: 'M.Sc. & JRF' },
-          { ...locations.storrs, name: 'PhD' }
+          { ...locations.chaibasa, name: 'Chaibasa\nHometown' },
+          { ...locations.delhi, name: 'B.Sc. Physics\nUniv. of Delhi' },
+          { ...locations.chennai, name: 'M.Sc. & JRF\nIIT Madras' },
+          { ...locations.storrs, name: 'PhD Physics\nUConn' }
         ]);
         globe.pointOfView({ lat: 30, lng: -15, altitude: 2.2 }, 2000);
         setTimeout(() => {

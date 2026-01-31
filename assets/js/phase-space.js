@@ -1,412 +1,303 @@
 // =============================================================================
-// PHASE SPACE VISUALIZATION - Standard Map (Kicked Rotor)
-// Based on Eq. 1 from "Quantum-classical correspondence in quantum channels"
-// Phys. Rev. E 111, 014210 (2025) - arXiv:2407.14067
+// PHASE SPACE VISUALIZATION - Chirikov Standard Map
+// Based on Eq. 2.14 from Bidhi's M.Sc. Thesis
 // =============================================================================
 
 /**
- * Implements the Chirikov standard map (kicked rotor) from Bidhi's thesis Eq. 2.14:
- *   q_{n+1} = q_n + p_n        (mod 1)   [position update first]
- *   p_{n+1} = p_n - (K/2π) sin(2π q_{n+1})  (mod 1)   [momentum kick uses NEW q]
- * Both taken mod 1 (toral phase space, unit square).
+ * Chirikov Standard Map (Eq. 2.14):
+ *   q_{n+1} = q_n + p_n (mod 1)
+ *   p_{n+1} = p_n - (K/2π) sin(2π q_{n+1}) (mod 1)
  *
- * The parameter K controls chaos:
- *   K ≈ 0:   Nearly integrable, dominated by KAM tori
- *   K ≈ 1:   Default - interesting mixed phase space
- *   K ≈ 4:   Fixed point at origin loses stability
- *   K > 5:   Increasingly chaotic
+ * This visualization shows the classic phase space structure:
+ * - KAM tori (closed curves) around stable fixed points
+ * - Chaotic sea (scattered points) between islands
+ * - Island chains at various resonances
  */
 class StandardMapVisualization {
   constructor(canvas, options = {}) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
 
-    // Physics parameters - K controls chaos (Eq. 2.14 in thesis)
-    this.K = options.K ?? 1.0;  // Default K=1
-    this.numParticles = options.numParticles ?? 3000;
+    // Physics
+    this.K = options.K ?? 1.0;
 
-    // Visual parameters
-    this.trailLength = options.trailLength ?? 8;
-    this.particleRadius = options.particleRadius ?? 1.5;
-    this.fadeAlpha = options.fadeAlpha ?? 0.05;
+    // Visualization parameters
+    this.numOrbits = options.numOrbits ?? 40;        // Number of different initial conditions
+    this.iterationsPerOrbit = options.iterationsPerOrbit ?? 800;  // How long to trace each orbit
+    this.pointSize = options.pointSize ?? 1.2;
     this.primaryColor = options.primaryColor ?? { r: 0, g: 212, b: 170 };
 
-    // Performance
-    this.targetFPS = options.targetFPS ?? 30;
-    this.iterationsPerFrame = options.iterationsPerFrame ?? 1;
-    this.framesPerIteration = options.framesPerIteration ?? 3;  // Slow down: iterate every N frames
+    // Animation
+    this.animationSpeed = options.animationSpeed ?? 20;  // Points drawn per frame
+    this.isRunning = false;
+    this.animationId = null;
 
     // State
-    this.particles = [];
-    this.tracers = [];  // Special bright tracer particles from clicks
-    this.animationId = null;
-    this.lastFrameTime = 0;
-    this.frameInterval = 1000 / this.targetFPS;
-    this.frameCount = 0;
-    this.isRunning = false;
-    this.prefersReducedMotion = false;
+    this.orbits = [];           // Array of orbit objects
+    this.currentOrbitIndex = 0;
+    this.currentPointIndex = 0;
+    this.isBuilding = true;     // Are we still building the phase space?
 
-    // Periodic refresh to keep it dynamic
-    this.refreshInterval = options.refreshInterval ?? 45000;  // Refresh every 45 seconds
-    this.lastRefreshTime = 0;
-
-    // Initialize
-    this.checkReducedMotion();
+    // Event handlers
     this.handleResize = this.handleResize.bind(this);
     this.handleClick = this.handleClick.bind(this);
     this.animate = this.animate.bind(this);
 
     window.addEventListener('resize', this.handleResize);
     this.canvas.addEventListener('click', this.handleClick);
+
     this.init();
   }
 
-  /**
-   * Check for reduced motion preference
-   */
-  checkReducedMotion() {
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    this.prefersReducedMotion = mediaQuery.matches;
-
-    mediaQuery.addEventListener('change', (e) => {
-      this.prefersReducedMotion = e.matches;
-      if (this.prefersReducedMotion) {
-        this.stop();
-        this.drawStaticFrame();
-      } else if (!this.isRunning) {
-        this.start();
-      }
-    });
-  }
-
-  /**
-   * Initialize canvas and particles
-   */
   init() {
     this.resizeCanvas();
-    this.initParticles();
+    this.generateOrbits();
 
-    if (this.prefersReducedMotion) {
-      this.drawStaticFrame();
+    // Check reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      this.drawComplete();
     }
   }
 
-  /**
-   * Resize canvas to match container
-   */
   resizeCanvas() {
     const rect = this.canvas.parentElement.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
 
-    this.canvas.width = rect.width * dpr;
-    this.canvas.height = rect.height * dpr;
-    this.canvas.style.width = `${rect.width}px`;
-    this.canvas.style.height = `${rect.height}px`;
-
-    this.ctx.scale(dpr, dpr);
     this.displayWidth = rect.width;
     this.displayHeight = rect.height;
-  }
 
-  /**
-   * Handle window resize
-   */
-  handleResize() {
-    this.resizeCanvas();
-    this.ctx.fillStyle = 'rgba(10, 10, 10, 1)';
+    this.canvas.width = rect.width * dpr;
+    this.canvas.height = rect.height * dpr;
+    this.canvas.style.width = rect.width + 'px';
+    this.canvas.style.height = rect.height + 'px';
+
+    this.ctx.scale(dpr, dpr);
+
+    // Clear and set background
+    this.ctx.fillStyle = '#0a0a0a';
     this.ctx.fillRect(0, 0, this.displayWidth, this.displayHeight);
   }
 
-  /**
-   * Handle click to add tracer particle
-   */
-  handleClick(event) {
+  handleResize() {
+    this.resizeCanvas();
+    if (this.isBuilding) {
+      // Redraw what we have so far
+      this.redrawCurrentState();
+    } else {
+      this.drawComplete();
+    }
+  }
+
+  handleClick(e) {
+    // Add a new orbit from click position
     const rect = this.canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+    const q = (e.clientX - rect.left) / rect.width;
+    const p = 1 - (e.clientY - rect.top) / rect.height;
 
-    // Convert screen coords to phase space coords
-    const q = x / this.displayWidth;
-    const p = 1 - (y / this.displayHeight);
+    // Generate new orbit from this point
+    const orbit = this.computeOrbit(q, p, this.iterationsPerOrbit * 2);
+    orbit.color = this.getHighlightColor();
+    orbit.size = this.pointSize * 1.5;
+    this.orbits.push(orbit);
 
-    // Add tracer particle with long trail
-    this.tracers.push({
-      q: q,
-      p: p,
-      trail: [],
-      maxTrail: 80,  // Much longer trail for tracers
-      age: 0,
-      maxAge: 500    // Fade out after this many iterations
-    });
-
-    // Limit number of tracers
-    if (this.tracers.length > 5) {
-      this.tracers.shift();
-    }
+    // Draw it immediately
+    this.drawOrbit(orbit);
   }
 
-  /**
-   * Initialize particles on a grid across phase space
-   */
-  initParticles() {
-    this.particles = [];
-    const gridSize = Math.ceil(Math.sqrt(this.numParticles));
-
-    for (let i = 0; i < gridSize; i++) {
-      for (let j = 0; j < gridSize; j++) {
-        if (this.particles.length >= this.numParticles) break;
-
-        const offset = 0.001;
-        this.particles.push({
-          q: (i + 0.5) / gridSize + (Math.random() - 0.5) * offset,
-          p: (j + 0.5) / gridSize + (Math.random() - 0.5) * offset,
-          trail: []
-        });
-      }
-    }
-  }
-
-  /**
-   * Mod 1 operation for toral phase space
-   */
   mod1(x) {
     return x - Math.floor(x);
   }
 
   /**
-   * Standard map iteration for main particles - Eq. 2.14 from thesis:
-   *   q_{n+1} = q_n + p_n (mod 1)
-   *   p_{n+1} = p_n - (K/2π) sin(2π q_{n+1}) (mod 1)
+   * Compute a single orbit starting from (q0, p0)
    */
-  iterateParticles() {
+  computeOrbit(q0, p0, iterations) {
+    const points = [];
+    let q = q0;
+    let p = p0;
     const twoPi = 2 * Math.PI;
     const KOverTwoPi = this.K / twoPi;
 
-    for (const particle of this.particles) {
-      particle.trail.push({ q: particle.q, p: particle.p });
-      if (particle.trail.length > this.trailLength) {
-        particle.trail.shift();
-      }
+    for (let i = 0; i < iterations; i++) {
+      points.push({ q, p });
 
-      // Position updates FIRST
-      const q_new = this.mod1(particle.q + particle.p);
-      // Momentum uses the NEW q
-      const p_new = this.mod1(particle.p - KOverTwoPi * Math.sin(twoPi * q_new));
+      // Standard map iteration (Eq. 2.14)
+      const q_new = this.mod1(q + p);
+      const p_new = this.mod1(p - KOverTwoPi * Math.sin(twoPi * q_new));
 
-      particle.q = q_new;
-      particle.p = p_new;
+      q = q_new;
+      p = p_new;
     }
+
+    return { points, color: null, size: this.pointSize };
   }
 
   /**
-   * Iterate tracer particles (called every frame for responsiveness)
-   * Same equations as main particles - Eq. 2.14
+   * Generate initial conditions spread across phase space
    */
-  iterateTracers() {
-    const twoPi = 2 * Math.PI;
-    const KOverTwoPi = this.K / twoPi;
+  generateOrbits() {
+    this.orbits = [];
 
-    for (const tracer of this.tracers) {
-      tracer.trail.push({ q: tracer.q, p: tracer.p });
-      if (tracer.trail.length > tracer.maxTrail) {
-        tracer.trail.shift();
-      }
+    // Create a mix of initial conditions:
+    // 1. Grid of points to sample different regions
+    // 2. Some points near fixed points to show islands
 
-      // Position updates FIRST
-      const q_new = this.mod1(tracer.q + tracer.p);
-      // Momentum uses the NEW q
-      const p_new = this.mod1(tracer.p - KOverTwoPi * Math.sin(twoPi * q_new));
-
-      tracer.q = q_new;
-      tracer.p = p_new;
-      tracer.age++;
-    }
-
-    // Remove old tracers
-    this.tracers = this.tracers.filter(t => t.age < t.maxAge);
-  }
-
-  /**
-   * Draw current state
-   */
-  draw() {
-    const w = this.displayWidth;
-    const h = this.displayHeight;
     const { r, g, b } = this.primaryColor;
 
-    // Fade previous frame
-    this.ctx.fillStyle = `rgba(10, 10, 10, ${this.fadeAlpha})`;
-    this.ctx.fillRect(0, 0, w, h);
-
-    // Draw main particles
-    this.ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.9)`;
-    for (const particle of this.particles) {
-      const x = particle.q * w;
-      const y = (1 - particle.p) * h;
-      this.ctx.beginPath();
-      this.ctx.arc(x, y, this.particleRadius, 0, Math.PI * 2);
-      this.ctx.fill();
-    }
-
-    // Draw tracer particles with glowing trails
-    for (const tracer of this.tracers) {
-      const fadeMultiplier = 1 - (tracer.age / tracer.maxAge);
-
-      // Draw trail
-      for (let i = 0; i < tracer.trail.length; i++) {
-        const point = tracer.trail[i];
-        const trailAlpha = (i / tracer.trail.length) * 0.8 * fadeMultiplier;
-        const x = point.q * w;
-        const y = (1 - point.p) * h;
-
-        this.ctx.fillStyle = `rgba(255, 255, 255, ${trailAlpha})`;
-        this.ctx.beginPath();
-        this.ctx.arc(x, y, 1.5, 0, Math.PI * 2);
-        this.ctx.fill();
-      }
-
-      // Draw current position (bright)
-      const x = tracer.q * w;
-      const y = (1 - tracer.p) * h;
-
-      // Glow effect
-      const gradient = this.ctx.createRadialGradient(x, y, 0, x, y, 8);
-      gradient.addColorStop(0, `rgba(255, 255, 255, ${0.9 * fadeMultiplier})`);
-      gradient.addColorStop(0.3, `rgba(${r}, ${g}, ${b}, ${0.6 * fadeMultiplier})`);
-      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-
-      this.ctx.fillStyle = gradient;
-      this.ctx.beginPath();
-      this.ctx.arc(x, y, 8, 0, Math.PI * 2);
-      this.ctx.fill();
-
-      // Core dot
-      this.ctx.fillStyle = `rgba(255, 255, 255, ${fadeMultiplier})`;
-      this.ctx.beginPath();
-      this.ctx.arc(x, y, 3, 0, Math.PI * 2);
-      this.ctx.fill();
-    }
-  }
-
-  /**
-   * Draw a static frame showing the phase space structure
-   */
-  drawStaticFrame() {
-    const w = this.displayWidth;
-    const h = this.displayHeight;
-    const { r, g, b } = this.primaryColor;
-
-    this.ctx.fillStyle = 'rgba(10, 10, 10, 1)';
-    this.ctx.fillRect(0, 0, w, h);
-
-    const tempParticles = [];
-    const gridSize = 50;
-
+    // Grid sampling
+    const gridSize = Math.ceil(Math.sqrt(this.numOrbits * 0.7));
     for (let i = 0; i < gridSize; i++) {
       for (let j = 0; j < gridSize; j++) {
-        tempParticles.push({
-          q: (i + 0.5) / gridSize,
-          p: (j + 0.5) / gridSize
-        });
+        if (this.orbits.length >= this.numOrbits) break;
+
+        const q = (i + 0.5) / gridSize + (Math.random() - 0.5) * 0.02;
+        const p = (j + 0.5) / gridSize + (Math.random() - 0.5) * 0.02;
+
+        const orbit = this.computeOrbit(q, p, this.iterationsPerOrbit);
+
+        // Color based on initial position for variety
+        const hue = (i * gridSize + j) * (360 / (gridSize * gridSize));
+        orbit.color = this.hslToRgb(hue, 70, 60);
+
+        this.orbits.push(orbit);
       }
     }
 
-    this.ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.3)`;
+    // Add some orbits near the main island centers
+    const specialPoints = [
+      { q: 0.5, p: 0.0 },   // Near origin (fixed point)
+      { q: 0.5, p: 0.5 },   // Center
+      { q: 0.25, p: 0.5 },  // Left island region
+      { q: 0.75, p: 0.5 },  // Right island region
+    ];
 
-    const iterations = 100;
-    const twoPi = 2 * Math.PI;
-    const KOverTwoPi = this.K / twoPi;
+    for (const pt of specialPoints) {
+      if (this.orbits.length >= this.numOrbits + 4) break;
+      const orbit = this.computeOrbit(
+        pt.q + (Math.random() - 0.5) * 0.05,
+        pt.p + (Math.random() - 0.5) * 0.05,
+        this.iterationsPerOrbit
+      );
+      orbit.color = { r, g, b };  // Primary color for special orbits
+      this.orbits.push(orbit);
+    }
 
-    for (let iter = 0; iter < iterations; iter++) {
-      for (const p of tempParticles) {
-        // Eq. 2.14: q updates first, then p uses new q
-        const q_new = this.mod1(p.q + p.p);
-        const p_new = this.mod1(p.p - KOverTwoPi * Math.sin(twoPi * q_new));
-        p.q = q_new;
-        p.p = p_new;
+    this.currentOrbitIndex = 0;
+    this.currentPointIndex = 0;
+    this.isBuilding = true;
+  }
 
-        const x = p.q * w;
-        const y = (1 - p.p) * h;
-        this.ctx.beginPath();
-        this.ctx.arc(x, y, 0.8, 0, Math.PI * 2);
-        this.ctx.fill();
-      }
+  hslToRgb(h, s, l) {
+    s /= 100;
+    l /= 100;
+    const a = s * Math.min(l, 1 - l);
+    const f = n => {
+      const k = (n + h / 30) % 12;
+      return l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    };
+    return { r: Math.round(f(0) * 255), g: Math.round(f(8) * 255), b: Math.round(f(4) * 255) };
+  }
+
+  getHighlightColor() {
+    // Bright cyan for user-added orbits
+    return { r: 100, g: 255, b: 220 };
+  }
+
+  /**
+   * Draw a single point
+   */
+  drawPoint(q, p, color, size) {
+    const x = q * this.displayWidth;
+    const y = (1 - p) * this.displayHeight;  // Flip y so p=0 is bottom
+
+    this.ctx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.8)`;
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, size, 0, Math.PI * 2);
+    this.ctx.fill();
+  }
+
+  /**
+   * Draw an entire orbit
+   */
+  drawOrbit(orbit) {
+    for (const pt of orbit.points) {
+      this.drawPoint(pt.q, pt.p, orbit.color, orbit.size);
     }
   }
 
   /**
-   * Animation loop with frame rate control
+   * Animation frame - gradually build up the phase space
    */
-  animate(currentTime) {
+  animate() {
     if (!this.isRunning) return;
 
+    if (this.isBuilding) {
+      // Draw several points per frame
+      for (let i = 0; i < this.animationSpeed; i++) {
+        if (this.currentOrbitIndex >= this.orbits.length) {
+          this.isBuilding = false;
+          break;
+        }
+
+        const orbit = this.orbits[this.currentOrbitIndex];
+        const pt = orbit.points[this.currentPointIndex];
+
+        this.drawPoint(pt.q, pt.p, orbit.color, orbit.size);
+
+        this.currentPointIndex++;
+        if (this.currentPointIndex >= orbit.points.length) {
+          this.currentPointIndex = 0;
+          this.currentOrbitIndex++;
+        }
+      }
+    }
+
     this.animationId = requestAnimationFrame(this.animate);
-
-    const elapsed = currentTime - this.lastFrameTime;
-    if (elapsed < this.frameInterval) return;
-
-    this.lastFrameTime = currentTime - (elapsed % this.frameInterval);
-    this.frameCount++;
-
-    // Periodic soft refresh - reinitialize a portion of particles to keep it dynamic
-    if (currentTime - this.lastRefreshTime > this.refreshInterval) {
-      this.softRefresh();
-      this.lastRefreshTime = currentTime;
-    }
-
-    // Tracers iterate every frame for responsiveness
-    this.iterateTracers();
-
-    // Main particles iterate every N frames (slows down the evolution)
-    if (this.frameCount % this.framesPerIteration === 0) {
-      for (let i = 0; i < this.iterationsPerFrame; i++) {
-        this.iterateParticles();
-      }
-    }
-
-    this.draw();
   }
 
   /**
-   * Soft refresh - reinitialize particles gradually to keep visualization dynamic
+   * Draw the complete phase space immediately
    */
-  softRefresh() {
-    const gridSize = Math.ceil(Math.sqrt(this.numParticles));
-    const offset = 0.001;
+  drawComplete() {
+    this.ctx.fillStyle = '#0a0a0a';
+    this.ctx.fillRect(0, 0, this.displayWidth, this.displayHeight);
 
-    // Reinitialize all particles to fresh grid positions
-    let idx = 0;
-    for (let i = 0; i < gridSize && idx < this.particles.length; i++) {
-      for (let j = 0; j < gridSize && idx < this.particles.length; j++) {
-        this.particles[idx].q = (i + 0.5) / gridSize + (Math.random() - 0.5) * offset;
-        this.particles[idx].p = (j + 0.5) / gridSize + (Math.random() - 0.5) * offset;
-        this.particles[idx].trail = [];
-        idx++;
+    for (const orbit of this.orbits) {
+      this.drawOrbit(orbit);
+    }
+
+    this.isBuilding = false;
+  }
+
+  /**
+   * Redraw current state after resize
+   */
+  redrawCurrentState() {
+    this.ctx.fillStyle = '#0a0a0a';
+    this.ctx.fillRect(0, 0, this.displayWidth, this.displayHeight);
+
+    // Draw completed orbits
+    for (let i = 0; i < this.currentOrbitIndex; i++) {
+      this.drawOrbit(this.orbits[i]);
+    }
+
+    // Draw partial current orbit
+    if (this.currentOrbitIndex < this.orbits.length) {
+      const orbit = this.orbits[this.currentOrbitIndex];
+      for (let j = 0; j < this.currentPointIndex; j++) {
+        const pt = orbit.points[j];
+        this.drawPoint(pt.q, pt.p, orbit.color, orbit.size);
       }
     }
   }
 
-  /**
-   * Start animation
-   */
   start() {
-    if (this.prefersReducedMotion) {
-      this.drawStaticFrame();
-      return;
-    }
-
     if (this.isRunning) return;
-
     this.isRunning = true;
-    this.lastFrameTime = performance.now();
-    this.lastRefreshTime = performance.now();
-    this.frameCount = 0;
-    this.animationId = requestAnimationFrame(this.animate);
+    this.animate();
   }
 
-  /**
-   * Stop animation
-   */
   stop() {
     this.isRunning = false;
     if (this.animationId) {
@@ -416,27 +307,18 @@ class StandardMapVisualization {
   }
 
   /**
-   * Reset to initial state
-   */
-  reset() {
-    this.stop();
-    this.initParticles();
-    this.tracers = [];
-    this.ctx.fillStyle = 'rgba(10, 10, 10, 1)';
-    this.ctx.fillRect(0, 0, this.displayWidth, this.displayHeight);
-    this.start();
-  }
-
-  /**
-   * Update K parameter (kick strength / chaos parameter)
+   * Update K parameter and regenerate
    */
   setK(K) {
     this.K = K;
+    this.ctx.fillStyle = '#0a0a0a';
+    this.ctx.fillRect(0, 0, this.displayWidth, this.displayHeight);
+    this.generateOrbits();
+    this.currentOrbitIndex = 0;
+    this.currentPointIndex = 0;
+    this.isBuilding = true;
   }
 
-  /**
-   * Clean up
-   */
   destroy() {
     this.stop();
     window.removeEventListener('resize', this.handleResize);
@@ -454,29 +336,19 @@ function initPhaseSpaceVisualization() {
   if (!canvas) return null;
 
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  const isLowEnd = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2;
-
-  let numParticles = 500;
-  if (isMobile) numParticles = 300;
-  if (isLowEnd) numParticles = 200;
 
   const viz = new StandardMapVisualization(canvas, {
-    K: 1.0,  // Default K=1 per Bidhi's preference
-    numParticles: numParticles,
-    trailLength: 8,
-    particleRadius: 1.5,
-    fadeAlpha: 0.04,           // Slower fade for longer trails
-    targetFPS: 30,
-    iterationsPerFrame: 1,
-    framesPerIteration: 8,     // Slow evolution: ~4 iterations/second
-    refreshInterval: 40000,    // Refresh every 40 seconds
-    primaryColor: { r: 0, g: 212, b: 170 }
+    K: 1.0,
+    numOrbits: isMobile ? 25 : 40,
+    iterationsPerOrbit: isMobile ? 500 : 800,
+    pointSize: isMobile ? 1.0 : 1.2,
+    animationSpeed: isMobile ? 15 : 25
   });
 
   viz.start();
 
-  // Set up K slider if present (controls chaos parameter)
-  const slider = document.getElementById('alpha-slider');  // HTML id unchanged for compatibility
+  // Set up K slider
+  const slider = document.getElementById('alpha-slider');
   const kValue = document.getElementById('alpha-value');
 
   if (slider) {

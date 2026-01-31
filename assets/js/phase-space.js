@@ -342,7 +342,7 @@ function initPhaseSpaceVisualization() {
     numOrbits: isMobile ? 25 : 40,
     iterationsPerOrbit: isMobile ? 500 : 800,
     pointSize: isMobile ? 1.0 : 1.2,
-    animationSpeed: isMobile ? 15 : 25
+    animationSpeed: isMobile ? 50 : 100  // Faster build-up
   });
 
   viz.start();

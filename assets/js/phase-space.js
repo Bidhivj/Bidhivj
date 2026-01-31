@@ -5,24 +5,24 @@
 // =============================================================================
 
 /**
- * Implements the Chirikov standard map (kicked rotor):
- *   p' = p - (α/2π) sin(2πq)   [momentum kick]
- *   q' = q + p'                [free rotation]
- * Both taken mod 1 (toral phase space).
+ * Implements the Chirikov standard map (kicked rotor) from Bidhi's thesis Eq. 2.14:
+ *   q_{n+1} = q_n + p_n        (mod 1)   [position update first]
+ *   p_{n+1} = p_n - (K/2π) sin(2π q_{n+1})  (mod 1)   [momentum kick uses NEW q]
+ * Both taken mod 1 (toral phase space, unit square).
  *
- * The parameter α controls chaos:
- *   α ≈ 0:   Nearly integrable, dominated by KAM tori
- *   α ≈ 1:   Last spanning torus breaks
- *   α ≈ 2:   Beautiful island structure (default)
- *   α > 5:   Increasingly chaotic
+ * The parameter K controls chaos:
+ *   K ≈ 0:   Nearly integrable, dominated by KAM tori
+ *   K ≈ 1:   Default - interesting mixed phase space
+ *   K ≈ 4:   Fixed point at origin loses stability
+ *   K > 5:   Increasingly chaotic
  */
 class StandardMapVisualization {
   constructor(canvas, options = {}) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
 
-    // Physics parameters
-    this.alpha = options.alpha ?? 2.0;
+    // Physics parameters - K controls chaos (Eq. 2.14 in thesis)
+    this.K = options.K ?? 1.0;  // Default K=1
     this.numParticles = options.numParticles ?? 3000;
 
     // Visual parameters
@@ -174,11 +174,13 @@ class StandardMapVisualization {
   }
 
   /**
-   * Standard map iteration for main particles - the core physics from Eq. 1
+   * Standard map iteration for main particles - Eq. 2.14 from thesis:
+   *   q_{n+1} = q_n + p_n (mod 1)
+   *   p_{n+1} = p_n - (K/2π) sin(2π q_{n+1}) (mod 1)
    */
   iterateParticles() {
     const twoPi = 2 * Math.PI;
-    const alphaOverTwoPi = this.alpha / twoPi;
+    const KOverTwoPi = this.K / twoPi;
 
     for (const particle of this.particles) {
       particle.trail.push({ q: particle.q, p: particle.p });
@@ -186,8 +188,10 @@ class StandardMapVisualization {
         particle.trail.shift();
       }
 
-      const p_new = this.mod1(particle.p - alphaOverTwoPi * Math.sin(twoPi * particle.q));
-      const q_new = this.mod1(particle.q + p_new);
+      // Position updates FIRST
+      const q_new = this.mod1(particle.q + particle.p);
+      // Momentum uses the NEW q
+      const p_new = this.mod1(particle.p - KOverTwoPi * Math.sin(twoPi * q_new));
 
       particle.q = q_new;
       particle.p = p_new;
@@ -196,10 +200,11 @@ class StandardMapVisualization {
 
   /**
    * Iterate tracer particles (called every frame for responsiveness)
+   * Same equations as main particles - Eq. 2.14
    */
   iterateTracers() {
     const twoPi = 2 * Math.PI;
-    const alphaOverTwoPi = this.alpha / twoPi;
+    const KOverTwoPi = this.K / twoPi;
 
     for (const tracer of this.tracers) {
       tracer.trail.push({ q: tracer.q, p: tracer.p });
@@ -207,8 +212,10 @@ class StandardMapVisualization {
         tracer.trail.shift();
       }
 
-      const p_new = this.mod1(tracer.p - alphaOverTwoPi * Math.sin(twoPi * tracer.q));
-      const q_new = this.mod1(tracer.q + p_new);
+      // Position updates FIRST
+      const q_new = this.mod1(tracer.q + tracer.p);
+      // Momentum uses the NEW q
+      const p_new = this.mod1(tracer.p - KOverTwoPi * Math.sin(twoPi * q_new));
 
       tracer.q = q_new;
       tracer.p = p_new;
@@ -308,12 +315,13 @@ class StandardMapVisualization {
 
     const iterations = 100;
     const twoPi = 2 * Math.PI;
-    const alphaOverTwoPi = this.alpha / twoPi;
+    const KOverTwoPi = this.K / twoPi;
 
     for (let iter = 0; iter < iterations; iter++) {
       for (const p of tempParticles) {
-        const p_new = this.mod1(p.p - alphaOverTwoPi * Math.sin(twoPi * p.q));
-        const q_new = this.mod1(p.q + p_new);
+        // Eq. 2.14: q updates first, then p uses new q
+        const q_new = this.mod1(p.q + p.p);
+        const p_new = this.mod1(p.p - KOverTwoPi * Math.sin(twoPi * q_new));
         p.q = q_new;
         p.p = p_new;
 
@@ -420,11 +428,10 @@ class StandardMapVisualization {
   }
 
   /**
-   * Update alpha parameter (kick strength)
+   * Update K parameter (kick strength / chaos parameter)
    */
-  setAlpha(alpha) {
-    this.alpha = alpha;
-    // Optionally reset particles when alpha changes significantly
+  setK(K) {
+    this.K = K;
   }
 
   /**
@@ -454,7 +461,7 @@ function initPhaseSpaceVisualization() {
   if (isLowEnd) numParticles = 200;
 
   const viz = new StandardMapVisualization(canvas, {
-    alpha: 2.0,
+    K: 1.0,  // Default K=1 per Bidhi's preference
     numParticles: numParticles,
     trailLength: 8,
     particleRadius: 1.5,
@@ -468,16 +475,16 @@ function initPhaseSpaceVisualization() {
 
   viz.start();
 
-  // Set up alpha slider if present
-  const slider = document.getElementById('alpha-slider');
-  const alphaValue = document.getElementById('alpha-value');
+  // Set up K slider if present (controls chaos parameter)
+  const slider = document.getElementById('alpha-slider');  // HTML id unchanged for compatibility
+  const kValue = document.getElementById('alpha-value');
 
   if (slider) {
     slider.addEventListener('input', (e) => {
-      const alpha = parseFloat(e.target.value);
-      viz.setAlpha(alpha);
-      if (alphaValue) {
-        alphaValue.textContent = alpha.toFixed(1);
+      const K = parseFloat(e.target.value);
+      viz.setK(K);
+      if (kValue) {
+        kValue.textContent = K.toFixed(1);
       }
     });
   }

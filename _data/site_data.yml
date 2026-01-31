@@ -66,7 +66,7 @@ current_research:
 # -----------------------------------------------------------------------------
 past_research:
   - title: "Quantum-Classical Correspondence of Channels"
-    description: "Spectral properties of quantum and classical channels corresponding to chaotic systems like standard map, baker's map, and cat map. Quantum scars in open quantum dynamical systems that display chaos in the classical limit. Spatiotemporal correlation functions for quantum and classical many-body chaotic systems."
+    description: "Spectral properties of quantum and classical channels corresponding to chaotic systems like standard map, baker's map, and cat map. Quantum scars in open quantum dynamical systems that display chaos in the classical limit."
     institution: "IIT Madras (Junior Research Fellow)"
 
   - title: "An Interplay of Quantum Chaos and Quantum Channels"

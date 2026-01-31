@@ -17,6 +17,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Exam rankings dot animation
   initExamRankings();
+
+  // Scroll progress bar
+  initScrollProgress();
+
+  // Section title animations
+  initSectionTitles();
+
+  // Timeline animation
+  initTimeline();
+
+  // Publication expand/collapse
+  initPublications();
+
+  // Staggered grid reveals
+  initStaggeredReveals();
+
+  // Floating tags
+  initFloatingTags();
 });
 
 // -----------------------------------------------------------------------------
@@ -383,6 +401,118 @@ function shuffleArray(array) {
     [array[i], array[j]] = [array[j], array[i]];
   }
   return array;
+}
+
+// -----------------------------------------------------------------------------
+// Scroll Progress Bar
+// -----------------------------------------------------------------------------
+function initScrollProgress() {
+  const progressBar = document.getElementById('scroll-progress');
+  if (!progressBar) return;
+
+  window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = (scrollTop / docHeight) * 100;
+    progressBar.style.width = `${progress}%`;
+  }, { passive: true });
+}
+
+// -----------------------------------------------------------------------------
+// Section Title Animations
+// -----------------------------------------------------------------------------
+function initSectionTitles() {
+  const titles = document.querySelectorAll('.section-title');
+  if (!titles.length) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('revealed');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  titles.forEach(title => observer.observe(title));
+}
+
+// -----------------------------------------------------------------------------
+// Timeline Animation
+// -----------------------------------------------------------------------------
+function initTimeline() {
+  const timeline = document.querySelector('.timeline-horizontal');
+  if (!timeline) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('revealed');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+
+  observer.observe(timeline);
+}
+
+// -----------------------------------------------------------------------------
+// Publication Expand/Collapse
+// -----------------------------------------------------------------------------
+function initPublications() {
+  const publications = document.querySelectorAll('.publication');
+
+  publications.forEach(pub => {
+    // Add expand hint if there's a summary
+    const summary = pub.querySelector('.publication__summary');
+    if (summary) {
+      const hint = document.createElement('div');
+      hint.className = 'publication__expand-hint';
+      hint.innerHTML = 'Click to read more <i class="fas fa-chevron-down"></i>';
+
+      // Insert before summary
+      summary.parentNode.insertBefore(hint, summary);
+
+      pub.addEventListener('click', (e) => {
+        // Don't toggle if clicking a link
+        if (e.target.tagName === 'A') return;
+        pub.classList.toggle('expanded');
+      });
+    }
+  });
+}
+
+// -----------------------------------------------------------------------------
+// Staggered Grid Reveals
+// -----------------------------------------------------------------------------
+function initStaggeredReveals() {
+  const grids = document.querySelectorAll('.awards-grid, .teaching-grid');
+
+  grids.forEach(grid => {
+    grid.classList.add('stagger-reveal');
+    Array.from(grid.children).forEach(child => {
+      child.classList.add('reveal-item');
+    });
+  });
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('revealed');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+
+  grids.forEach(grid => observer.observe(grid));
+}
+
+// -----------------------------------------------------------------------------
+// Floating Tags (subtle animation)
+// -----------------------------------------------------------------------------
+function initFloatingTags() {
+  const heroTags = document.querySelectorAll('.hero__interests .tag');
+  heroTags.forEach(tag => tag.classList.add('tag--float'));
 }
 
 // -----------------------------------------------------------------------------

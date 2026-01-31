@@ -200,3 +200,334 @@
     transform: translateY(0);
   }
 }
+
+// Staggered reveal for grids
+.stagger-reveal {
+  .reveal-item {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  &.revealed .reveal-item {
+    opacity: 1;
+    transform: translateY(0);
+
+    @for $i from 1 through 8 {
+      &:nth-child(#{$i}) {
+        transition-delay: #{$i * 0.1}s;
+      }
+    }
+  }
+}
+
+// =============================================================================
+// SECTION TITLE ANIMATED UNDERLINE
+// =============================================================================
+.section-title {
+  position: relative;
+  display: inline-block;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, $color-primary, transparent);
+    transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  &.revealed::after {
+    width: 100%;
+  }
+}
+
+// =============================================================================
+// SCROLL PROGRESS BAR
+// =============================================================================
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background: linear-gradient(90deg, $color-primary, rgba($color-primary, 0.5));
+  z-index: 1001;
+  transition: width 0.1s linear;
+  box-shadow: 0 0 10px $color-primary-glow;
+}
+
+// =============================================================================
+// RESEARCH TAGS - FLOATING EFFECT
+// =============================================================================
+.tags {
+  .tag {
+    transition: all $transition-fast, transform 0.3s ease;
+
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba($color-primary, 0.3);
+    }
+  }
+}
+
+// Subtle float animation for tags
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.tag--float {
+  animation: float 3s ease-in-out infinite;
+
+  @for $i from 1 through 6 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.2}s;
+    }
+  }
+
+  &:hover {
+    animation-play-state: paused;
+  }
+}
+
+// =============================================================================
+// AWARD TROPHY SHINE EFFECT
+// =============================================================================
+.award__icon {
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      45deg,
+      transparent 40%,
+      rgba(255, 255, 255, 0.15) 50%,
+      transparent 60%
+    );
+    transform: translateX(-100%);
+    transition: none;
+  }
+
+  .award:hover &::before {
+    animation: shine 1.5s ease forwards;
+  }
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+// =============================================================================
+// PERSONAL SECTION - ANIMATED ICONS
+// =============================================================================
+.personal__interest {
+  i {
+    transition: transform 0.3s ease, color 0.3s ease;
+  }
+
+  &:hover i {
+    transform: scale(1.2);
+  }
+
+  // Badminton paddle swing
+  &:has(.fa-table-tennis-paddle-ball):hover i {
+    animation: paddle-swing 0.5s ease;
+  }
+
+  // Piano keys bounce
+  &:has(.fa-music):hover i {
+    animation: piano-bounce 0.6s ease;
+  }
+}
+
+@keyframes paddle-swing {
+  0%, 100% { transform: rotate(0deg) scale(1.2); }
+  25% { transform: rotate(-20deg) scale(1.2); }
+  75% { transform: rotate(20deg) scale(1.2); }
+}
+
+@keyframes piano-bounce {
+  0%, 100% { transform: translateY(0) scale(1.2); }
+  20% { transform: translateY(-4px) scale(1.2); }
+  40% { transform: translateY(0) scale(1.2); }
+  60% { transform: translateY(-2px) scale(1.2); }
+  80% { transform: translateY(0) scale(1.2); }
+}
+
+// =============================================================================
+// TIMELINE ANIMATION
+// =============================================================================
+.timeline-horizontal {
+  position: relative;
+
+  // Connecting line that draws in
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, $color-border, $color-primary, $color-border);
+    z-index: 0;
+    transition: width 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+    @include respond-to(md) {
+      display: block;
+    }
+
+    display: none;
+  }
+
+  &.revealed::before {
+    width: 100%;
+  }
+
+  &__item {
+    position: relative;
+    z-index: 1;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.3s ease;
+
+    .timeline-horizontal.revealed & {
+      opacity: 1;
+      transform: translateY(0);
+
+      @for $i from 1 through 5 {
+        &:nth-child(#{$i}) {
+          transition-delay: #{0.3 + $i * 0.15}s;
+        }
+      }
+    }
+
+    // Pulse effect on current
+    &--current::after {
+      content: '';
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      width: 8px;
+      height: 8px;
+      background: $color-primary;
+      border-radius: 50%;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+  }
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba($color-primary, 0.5);
+  }
+  50% {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 8px rgba($color-primary, 0);
+  }
+}
+
+// =============================================================================
+// PUBLICATION CARDS - EXPANDABLE
+// =============================================================================
+.publication {
+  cursor: pointer;
+  transition: all $transition-base;
+
+  &__summary {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    padding-top: 0;
+    border-top: none;
+    margin-bottom: 0;
+    transition: all 0.4s ease;
+  }
+
+  &.expanded &__summary {
+    max-height: 200px;
+    opacity: 1;
+    padding-top: $space-md;
+    border-top: 1px solid $color-border;
+  }
+
+  &__expand-hint {
+    font-size: $text-xs;
+    color: $color-text-dim;
+    margin-top: $space-sm;
+    transition: color $transition-fast;
+
+    i {
+      margin-left: $space-xs;
+      transition: transform 0.3s ease;
+    }
+  }
+
+  &:hover &__expand-hint {
+    color: $color-primary;
+  }
+
+  &.expanded &__expand-hint i {
+    transform: rotate(180deg);
+  }
+}
+
+// =============================================================================
+// TEACHING CARDS - HOVER EFFECTS
+// =============================================================================
+.teaching-card {
+  transition: all $transition-base;
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: $color-primary;
+  }
+
+  &__label {
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: $color-primary;
+      transition: width 0.3s ease;
+    }
+  }
+
+  &:hover &__label::after {
+    width: 100%;
+  }
+}
+
+// =============================================================================
+// PHOTO PLACEHOLDER - GEOMETRIC ANIMATION
+// =============================================================================
+.hero__photo-frame {
+  &::after {
+    animation: rotate-slow 20s linear infinite;
+  }
+
+  &:hover::after {
+    animation-duration: 5s;
+  }
+}
+
+@keyframes rotate-slow {
+  from { transform: rotate(45deg); }
+  to { transform: rotate(405deg); }
+}

@@ -48,14 +48,14 @@
 
 .chaos-control {
   position: absolute;
-  bottom: $space-lg;
+  top: calc(#{$nav-height} + #{$space-lg});
   right: $space-lg;
   z-index: 10;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: $space-sm;
-  opacity: 0.6;
+  opacity: 0.5;
   transition: opacity $transition-base;
 
   &:hover,
@@ -64,7 +64,7 @@
   }
 
   @include respond-to(md) {
-    bottom: $space-xl;
+    top: calc(#{$nav-height} + #{$space-xl});
     right: $space-xl;
   }
 

@@ -177,7 +177,7 @@ function togglePastResearch(button) {
 }
 
 // -----------------------------------------------------------------------------
-// Exam Rankings Canvas Animation
+// Exam Rankings Canvas Animation - Physics-based particles
 // -----------------------------------------------------------------------------
 function initExamRankings() {
   const rankings = document.querySelectorAll('.exam-ranking');
@@ -185,7 +185,6 @@ function initExamRankings() {
 
   rankings.forEach(ranking => {
     const container = ranking.querySelector('.exam-ranking__dots');
-    const result = ranking.querySelector('.exam-ranking__result');
     const rank = parseInt(ranking.dataset.rank);
     const totalStr = ranking.dataset.total.replace(/,/g, '');
     const total = parseInt(totalStr);
@@ -198,153 +197,208 @@ function initExamRankings() {
     const ctx = canvas.getContext('2d');
     container.appendChild(canvas);
 
-    // Size canvas to container
+    // Size canvas
     const size = Math.min(container.offsetWidth, 300);
     canvas.width = size;
     canvas.height = size;
     canvas.style.width = size + 'px';
     canvas.style.height = size + 'px';
 
-    // Calculate grid
+    // Grid setup
     const cols = Math.ceil(Math.sqrt(total));
-    const dotSize = Math.max(1, (size / cols) * 0.6);
+    const baseSize = Math.max(1, (size / cols) * 0.6);
     const gap = size / cols;
+    const centerX = size / 2;
+    const centerY = size / 2;
 
-    // Mark survivors (top `rank` candidates)
+    // Create particles with physics properties
+    const particles = [];
     const survivors = new Set();
     while (survivors.size < rank) {
       survivors.add(Math.floor(Math.random() * total));
     }
 
-    // Pick one survivor as Bidhi (near center for dramatic zoom)
-    const centerIndex = Math.floor(cols / 2) * cols + Math.floor(cols / 2);
-    let bidhiIndex = centerIndex;
-    // Find closest survivor to center
+    // Find Bidhi (survivor closest to center)
+    let bidhiIndex = 0;
     let minDist = Infinity;
     survivors.forEach(i => {
       const col = i % cols;
       const row = Math.floor(i / cols);
-      const dist = Math.abs(col - cols/2) + Math.abs(row - cols/2);
+      const dist = Math.hypot(col - cols/2, row - cols/2);
       if (dist < minDist) {
         minDist = dist;
         bidhiIndex = i;
       }
     });
 
-    // Bidhi's position
-    const bidhiCol = bidhiIndex % cols;
-    const bidhiRow = Math.floor(bidhiIndex / cols);
-    const bidhiX = bidhiCol * gap + gap / 2;
-    const bidhiY = bidhiRow * gap + gap / 2;
+    // Initialize all particles
+    for (let i = 0; i < total; i++) {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const baseX = col * gap + gap / 2;
+      const baseY = row * gap + gap / 2;
+
+      particles.push({
+        baseX, baseY,
+        x: baseX, y: baseY,
+        vx: 0, vy: 0,
+        offsetX: 0, offsetY: 0,
+        isSurvivor: survivors.has(i),
+        isBidhi: i === bidhiIndex,
+        eliminated: false,
+        eliminatedAt: 0,
+        scale: 1,
+        alpha: 1,
+        // Physics properties for survivors
+        angle: Math.random() * Math.PI * 2,
+        angularVel: (Math.random() - 0.5) * 0.02,
+        orbitRadius: Math.random() * 2 + 1,
+        breathePhase: Math.random() * Math.PI * 2,
+        breatheSpeed: 0.03 + Math.random() * 0.02
+      });
+    }
 
     // Animation state
     let animationStarted = false;
-    let phase = 0; // 0=elimination, 1=zoom, 2=done
+    let time = 0;
+    let phase = 0; // 0=elimination, 1=gather, 2=zoom, 3=alive
     let eliminationProgress = 0;
+    let gatherProgress = 0;
     let zoomProgress = 0;
-    let pulsePhase = 0;
     const eliminationOrder = shuffleArray([...Array(total).keys()].filter(i => !survivors.has(i)));
+
+    function updatePhysics() {
+      time += 0.016; // ~60fps timestep
+
+      for (const p of particles) {
+        if (p.isSurvivor && !p.eliminated) {
+          // Survivors have gentle floating motion
+          if (phase >= 1) {
+            // Orbital drift
+            p.angle += p.angularVel;
+            p.offsetX = Math.cos(p.angle) * p.orbitRadius;
+            p.offsetY = Math.sin(p.angle) * p.orbitRadius;
+
+            // Breathing scale
+            p.breathePhase += p.breatheSpeed;
+            p.scale = 1 + Math.sin(p.breathePhase) * 0.15;
+          }
+
+          // Smooth position update
+          p.x = p.baseX + p.offsetX;
+          p.y = p.baseY + p.offsetY;
+        } else if (p.eliminated) {
+          // Eliminated particles shrink and fade
+          const timeSinceElim = time - p.eliminatedAt;
+          p.scale = Math.max(0.15, 1 - timeSinceElim * 2);
+          p.alpha = Math.max(0.1, 1 - timeSinceElim * 1.5);
+        }
+      }
+    }
 
     function draw() {
       ctx.clearRect(0, 0, size, size);
 
-      const eliminatedCount = Math.floor(eliminationProgress * eliminationOrder.length);
-      const eliminatedSet = new Set(eliminationOrder.slice(0, eliminatedCount));
+      // Draw eliminated particles (background)
+      for (const p of particles) {
+        if (p.eliminated) {
+          ctx.fillStyle = `rgba(40, 40, 40, ${p.alpha * 0.3})`;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, baseSize * p.scale * 0.3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
 
-      // Always draw dots in background (eliminated ones stay visible for context)
-      drawDots(eliminatedSet, 1, zoomProgress === 0);
+      // Draw non-eliminated, non-survivor particles
+      for (const p of particles) {
+        if (!p.eliminated && !p.isSurvivor) {
+          ctx.fillStyle = 'rgba(70, 70, 70, 0.8)';
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, baseSize, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
 
-      // During zoom, draw expanding Bidhi circle on top
+      // Draw survivors (not Bidhi)
+      for (const p of particles) {
+        if (p.isSurvivor && !p.isBidhi) {
+          const glow = phase >= 1 ? 0.3 : 0;
+          if (glow > 0) {
+            ctx.fillStyle = `rgba(0, 212, 170, ${glow * 0.5})`;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, baseSize * p.scale * 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.fillStyle = phase >= 1 ? 'rgba(0, 212, 170, 0.9)' : 'rgba(100, 100, 100, 0.8)';
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, baseSize * p.scale, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Draw Bidhi (special)
+      const bidhi = particles[bidhiIndex];
+      if (phase < 2) {
+        // Before zoom - glowing dot
+        const glowIntensity = phase >= 1 ? 1 : Math.max(0, (eliminationProgress - 0.7) / 0.3);
+        if (glowIntensity > 0) {
+          ctx.fillStyle = `rgba(0, 212, 170, ${glowIntensity * 0.4})`;
+          ctx.beginPath();
+          ctx.arc(bidhi.x, bidhi.y, baseSize * 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.fillStyle = phase >= 1 ? '#00d4aa' : 'rgba(0, 212, 170, 0.9)';
+        ctx.beginPath();
+        ctx.arc(bidhi.x, bidhi.y, baseSize * bidhi.scale * 1.3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Zoom overlay with stats
       if (zoomProgress > 0) {
         const maxRadius = size * 0.38;
-        const currentRadius = dotSize + (maxRadius - dotSize) * easeOutCubic(zoomProgress);
+        const currentRadius = baseSize + (maxRadius - baseSize) * easeOutCubic(zoomProgress);
 
         // Outer glow
-        const glowRadius = currentRadius * 1.5;
-        const gradient = ctx.createRadialGradient(size/2, size/2, currentRadius * 0.3, size/2, size/2, glowRadius);
+        const gradient = ctx.createRadialGradient(centerX, centerY, currentRadius * 0.3, centerX, centerY, currentRadius * 1.5);
         gradient.addColorStop(0, 'rgba(0, 212, 170, 0.4)');
         gradient.addColorStop(0.6, 'rgba(0, 212, 170, 0.15)');
         gradient.addColorStop(1, 'rgba(0, 212, 170, 0)');
         ctx.fillStyle = gradient;
         ctx.beginPath();
-        ctx.arc(size/2, size/2, glowRadius, 0, Math.PI * 2);
+        ctx.arc(centerX, centerY, currentRadius * 1.5, 0, Math.PI * 2);
         ctx.fill();
 
-        // Dark fill to make text readable against dot background
-        ctx.fillStyle = 'rgba(10, 10, 10, 0.85)';
+        // Dark background
+        ctx.fillStyle = 'rgba(10, 10, 10, 0.88)';
         ctx.beginPath();
-        ctx.arc(size/2, size/2, currentRadius, 0, Math.PI * 2);
+        ctx.arc(centerX, centerY, currentRadius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Main circle ring with subtle pulse
-        const pulse = 1 + Math.sin(pulsePhase) * 0.02;
+        // Pulsing ring
+        const pulse = 1 + Math.sin(time * 3) * 0.015;
         ctx.strokeStyle = '#00d4aa';
         ctx.lineWidth = 2 + zoomProgress * 2;
         ctx.beginPath();
-        ctx.arc(size/2, size/2, currentRadius * pulse, 0, Math.PI * 2);
+        ctx.arc(centerX, centerY, currentRadius * pulse, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Draw stats inside circle when zoom is mostly done
-        if (zoomProgress > 0.5) {
-          const textOpacity = (zoomProgress - 0.5) * 2;
+        // Stats text
+        if (zoomProgress > 0.4) {
+          const textOpacity = (zoomProgress - 0.4) / 0.6;
 
-          // "Top X%"
           ctx.fillStyle = `rgba(0, 212, 170, ${textOpacity})`;
-          ctx.font = `bold ${size * 0.12}px "Space Grotesk", sans-serif`;
+          ctx.font = `bold ${size * 0.13}px "Space Grotesk", sans-serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText(`Top ${percentile}%`, size/2, size/2 - size * 0.08);
+          ctx.fillText(`Top ${percentile}%`, centerX, centerY - size * 0.07);
 
-          // Rank
           ctx.fillStyle = `rgba(255, 255, 255, ${textOpacity * 0.9})`;
-          ctx.font = `${size * 0.06}px "JetBrains Mono", monospace`;
-          ctx.fillText(`Rank ${rank.toLocaleString()} of ${parseInt(totalStr).toLocaleString()}`, size/2, size/2 + size * 0.06);
+          ctx.font = `${size * 0.055}px "JetBrains Mono", monospace`;
+          ctx.fillText(`Rank ${rank.toLocaleString()} of ${parseInt(totalStr).toLocaleString()}`, centerX, centerY + size * 0.06);
 
-          // "Bidhi" label
-          ctx.fillStyle = `rgba(0, 212, 170, ${textOpacity * 0.7})`;
-          ctx.font = `${size * 0.045}px "Space Grotesk", sans-serif`;
-          ctx.fillText('— Bidhi —', size/2, size/2 + size * 0.16);
-        }
-      }
-    }
-
-    function drawDots(eliminatedSet, opacity, showBidhiGlow) {
-      for (let i = 0; i < total; i++) {
-        const col = i % cols;
-        const row = Math.floor(i / cols);
-        const x = col * gap + gap / 2;
-        const y = row * gap + gap / 2;
-
-        if (eliminatedSet.has(i)) {
-          // Eliminated - tiny faded dot
-          ctx.fillStyle = `rgba(40, 40, 40, ${0.15 * opacity})`;
-          ctx.beginPath();
-          ctx.arc(x, y, dotSize * 0.2, 0, Math.PI * 2);
-          ctx.fill();
-        } else if (i === bidhiIndex && showBidhiGlow && eliminationProgress > 0.8) {
-          // Bidhi glowing during late elimination
-          const glowIntensity = (eliminationProgress - 0.8) * 5;
-          ctx.fillStyle = `rgba(0, 212, 170, ${glowIntensity * opacity})`;
-          ctx.beginPath();
-          ctx.arc(x, y, dotSize * 2, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = `rgba(0, 212, 170, ${opacity})`;
-          ctx.beginPath();
-          ctx.arc(x, y, dotSize * 1.2, 0, Math.PI * 2);
-          ctx.fill();
-        } else if (survivors.has(i)) {
-          // Survivor
-          const color = eliminationProgress > 0.7 ? `rgba(0, 212, 170, ${opacity})` : `rgba(100, 100, 100, ${opacity})`;
-          ctx.fillStyle = color;
-          ctx.beginPath();
-          ctx.arc(x, y, dotSize, 0, Math.PI * 2);
-          ctx.fill();
-        } else {
-          // Not yet eliminated
-          ctx.fillStyle = `rgba(70, 70, 70, ${opacity})`;
-          ctx.beginPath();
-          ctx.arc(x, y, dotSize, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.fillStyle = `rgba(0, 212, 170, ${textOpacity * 0.6})`;
+          ctx.font = `${size * 0.04}px "Space Grotesk", sans-serif`;
+          ctx.fillText('Bidhi', centerX, centerY + size * 0.15);
         }
       }
     }
@@ -356,26 +410,40 @@ function initExamRankings() {
     function animate() {
       if (!animationStarted) return;
 
-      // Phase 0: Fast elimination (~1.5 seconds)
+      // Phase 0: Elimination
       if (phase === 0) {
-        eliminationProgress = Math.min(1, eliminationProgress + 0.025);
+        eliminationProgress = Math.min(1, eliminationProgress + 0.02);
+        const elimCount = Math.floor(eliminationProgress * eliminationOrder.length);
+
+        for (let i = 0; i < elimCount; i++) {
+          const idx = eliminationOrder[i];
+          if (!particles[idx].eliminated) {
+            particles[idx].eliminated = true;
+            particles[idx].eliminatedAt = time;
+          }
+        }
+
         if (eliminationProgress >= 1) {
           phase = 1;
         }
       }
-      // Phase 1: Zoom into Bidhi (~1 second)
+      // Phase 1: Survivors gather/glow
       else if (phase === 1) {
-        zoomProgress = Math.min(1, zoomProgress + 0.03);
-        pulsePhase += 0.1;
-        if (zoomProgress >= 1) {
+        gatherProgress = Math.min(1, gatherProgress + 0.025);
+        if (gatherProgress >= 1) {
           phase = 2;
         }
       }
-      // Phase 2: Pulse forever
-      else {
-        pulsePhase += 0.05;
+      // Phase 2: Zoom to Bidhi
+      else if (phase === 2) {
+        zoomProgress = Math.min(1, zoomProgress + 0.025);
+        if (zoomProgress >= 1) {
+          phase = 3;
+        }
       }
+      // Phase 3: Alive - continuous gentle motion
 
+      updatePhysics();
       draw();
       requestAnimationFrame(animate);
     }
@@ -383,7 +451,7 @@ function initExamRankings() {
     // Initial draw
     draw();
 
-    // Observe for scroll trigger
+    // Scroll trigger
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting && !animationStarted) {

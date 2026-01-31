@@ -34,32 +34,32 @@ timeline:
 # RESEARCH INTERESTS
 # -----------------------------------------------------------------------------
 research_interests:
-  - "Quantum Chaos"
-  - "Quantum-Classical Correspondence"
-  - "Open Quantum Systems"
-  - "Quantum Many-Body Systems"
-  - "Quantum Channels"
+  - "Quantum Sensing"
+  - "Spin Squeezing"
+  - "Quantum Metrology"
+  - "Entanglement-Enhanced Measurements"
+  - "Many-Body Quantum Systems"
   - "Quantum Information"
 
 # -----------------------------------------------------------------------------
 # CURRENT RESEARCH (at UConn with Prof. Santos)
 # -----------------------------------------------------------------------------
 current_research:
-  - title: "Quantum Phase Transitions"
-    description: "Quantum phase transition and excited state phase transition in spin systems."
-    icon: "fa-atom"
+  - title: "Quantum Sensing & Metrology"
+    description: "Using entangled quantum states to achieve measurement precision beyond classical limits."
+    icon: "fa-bullseye"
 
-  - title: "Quantum-Classical Correspondence"
-    description: "Quantum-classical correspondence in spin systems with long-range interactions."
-    icon: "fa-network-wired"
+  - title: "Spin Squeezing"
+    description: "Generating squeezed spin states that reduce quantum noise for enhanced sensitivity."
+    icon: "fa-compress-alt"
 
-  - title: "Chaos and Stickiness"
-    description: "The effect of classical chaos and stickiness on quantum dynamics."
-    icon: "fa-hurricane"
+  - title: "Time-Reversal Protocols"
+    description: "Signal amplification through time-reversed interactions for quantum-enhanced measurements."
+    icon: "fa-clock-rotate-left"
 
-  - title: "Open Quantum Systems"
-    description: "Open quantum systems and non-Hermitian matrices. Dissipative quantum chaos."
-    icon: "fa-circle-notch"
+  - title: "Many-Body Entanglement"
+    description: "Dynamics of entanglement in interacting spin systems for metrological applications."
+    icon: "fa-diagram-project"
 
 # -----------------------------------------------------------------------------
 # PAST RESEARCH

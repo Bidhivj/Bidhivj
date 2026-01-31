@@ -654,7 +654,7 @@ function initJourneyGlobe() {
 
         setTimeout(() => {
           globe.pointsData([pointsData[0], pointsData[1]]);
-          globe.labelsData([{ ...locations.delhi, name: 'Delhi' }]);
+          globe.labelsData([{ ...locations.delhi, name: 'B.Sc. Physics\nUniv. of Delhi' }]);
         }, 1300);
 
         setTimeout(() => { currentPhase++; runAnimation(); }, 2200);
@@ -682,7 +682,7 @@ function initJourneyGlobe() {
 
         setTimeout(() => {
           globe.pointsData([pointsData[0], pointsData[1], pointsData[2]]);
-          globe.labelsData([{ ...locations.chennai, name: 'Chennai' }]);
+          globe.labelsData([{ ...locations.chennai, name: 'M.Sc. & JRF\nIIT Madras' }]);
         }, 1300);
 
         setTimeout(() => { currentPhase++; runAnimation(); }, 2500);
@@ -690,11 +690,11 @@ function initJourneyGlobe() {
 
       // Phase 3: Pause to show India journey complete, then ZOOM OUT
       () => {
-        // Show all India locations briefly
+        // Show all India locations with full info
         globe.labelsData([
-          { ...locations.chaibasa, name: 'Chaibasa' },
-          { ...locations.delhi, name: 'Delhi' },
-          { ...locations.chennai, name: 'Chennai' }
+          { ...locations.chaibasa, name: 'Chaibasa, Jharkhand' },
+          { ...locations.delhi, name: 'B.Sc.\nDelhi' },
+          { ...locations.chennai, name: 'M.Sc.\nChennai' }
         ]);
 
         // Dramatic pause, then zoom out
@@ -738,7 +738,7 @@ function initJourneyGlobe() {
         globe.pointOfView({ lat: 41.8, lng: -72.2, altitude: 0.6 }, 2500);
 
         setTimeout(() => {
-          globe.labelsData([{ ...locations.storrs, name: 'Storrs, CT' }]);
+          globe.labelsData([{ ...locations.storrs, name: 'PhD Physics\nUConn, Storrs CT' }]);
         }, 2000);
 
         setTimeout(() => { currentPhase++; runAnimation(); }, 4500);
@@ -748,12 +748,12 @@ function initJourneyGlobe() {
       () => {
         globe.ringsData([]); // Stop pulsing
 
-        // Show university names
+        // Show full info: degree + university + location
         globe.labelsData([
-          { ...locations.chaibasa, name: 'Origin' },
-          { ...locations.delhi, name: 'Univ. of Delhi' },
-          { ...locations.chennai, name: 'IIT Madras' },
-          { ...locations.storrs, name: 'UConn' }
+          { ...locations.chaibasa, name: 'Chaibasa\nJharkhand' },
+          { ...locations.delhi, name: 'B.Sc. Physics\nUniv. of Delhi' },
+          { ...locations.chennai, name: 'M.Sc. & JRF\nIIT Madras, Chennai' },
+          { ...locations.storrs, name: 'PhD Physics\nUConn, Storrs CT' }
         ]);
 
         // Pull back to show the full journey

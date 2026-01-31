@@ -40,11 +40,9 @@ class StandardMapVisualization {
 
     // Event handlers
     this.handleResize = this.handleResize.bind(this);
-    this.handleClick = this.handleClick.bind(this);
     this.animate = this.animate.bind(this);
 
     window.addEventListener('resize', this.handleResize);
-    this.canvas.addEventListener('click', this.handleClick);
 
     this.init();
   }
@@ -87,19 +85,6 @@ class StandardMapVisualization {
     } else {
       this.drawComplete();
     }
-  }
-
-  handleClick(e) {
-    const rect = this.canvas.getBoundingClientRect();
-    const q = (e.clientX - rect.left) / rect.width;
-    const p = 1 - (e.clientY - rect.top) / rect.height;
-
-    // Generate new orbit from click point
-    const orbit = this.computeOrbit(q, p, this.iterationsPerOrbit * 2);
-    orbit.color = { r: 100, g: 255, b: 220 };  // Bright cyan
-    orbit.size = this.pointSize * 1.5;
-    this.orbits.push(orbit);
-    this.drawOrbit(orbit);
   }
 
   mod1(x) {
@@ -314,7 +299,6 @@ class StandardMapVisualization {
   destroy() {
     this.stop();
     window.removeEventListener('resize', this.handleResize);
-    this.canvas.removeEventListener('click', this.handleClick);
   }
 }
 

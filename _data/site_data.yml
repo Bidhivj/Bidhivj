@@ -88,7 +88,7 @@ publications:
       - name: "Lea F. Santos"
     journal: "arXiv preprint"
     year: 2025
-    status: "published"
+    status: "preprint"
     arxiv: "https://arxiv.org/abs/2512.09038"
     summary: "How driven quantum systems with classical chaos and localized openness deviate from Ginibre ensemble predictions."
 

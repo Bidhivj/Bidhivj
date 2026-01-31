@@ -4,7 +4,7 @@
 
 <article class="publication reveal">
   <span class="publication__status publication__status--{{ include.pub.status }}">
-    {% if include.pub.status == 'published' %}Published{% else %}In Preparation{% endif %}
+    {% if include.pub.status == 'published' %}Published{% elsif include.pub.status == 'preprint' %}Preprint{% else %}In Preparation{% endif %}
   </span>
 
   <h3 class="publication__title">

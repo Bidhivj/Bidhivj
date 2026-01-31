@@ -349,6 +349,11 @@
       background: $color-primary-dim;
       color: $color-primary;
     }
+
+    &--preprint {
+      background: rgba(255, 193, 7, 0.15);
+      color: #ffc107;
+    }
   }
 
   &__title {

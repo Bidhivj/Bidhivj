@@ -370,75 +370,117 @@
 }
 
 // =============================================================================
-// TIMELINE ANIMATION
+// JOURNEY ORBIT - Phase Space Trajectory Timeline
 // =============================================================================
-.timeline-horizontal {
+.journey-orbit {
   position: relative;
+  width: 100%;
+  min-height: 280px;
 
-  // Connecting line that draws in
-  &::before {
-    content: '';
+  @include respond-to(md) {
+    min-height: 320px;
+  }
+
+  &__canvas {
     position: absolute;
-    top: 50%;
+    top: 0;
     left: 0;
-    width: 0;
-    height: 2px;
-    background: linear-gradient(90deg, $color-border, $color-primary, $color-border);
-    z-index: 0;
-    transition: width 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  &__labels {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: $space-md;
+    padding-top: $space-xl;
 
     @include respond-to(md) {
-      display: block;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding-top: 180px;
+      gap: $space-sm;
+    }
+  }
+
+  &__label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: $space-sm $space-md;
+    background: rgba($color-bg-card, 0.8);
+    border: 1px solid $color-border;
+    border-radius: $radius-sm;
+    opacity: 0;
+    transform: translateY(15px);
+    transition: all 0.5s ease, border-color 0.3s ease, background 0.3s ease;
+    flex: 1;
+    min-width: 0;
+
+    @include respond-to(md) {
+      text-align: center;
+      max-width: 140px;
     }
 
-    display: none;
-  }
+    &:hover {
+      border-color: $color-primary;
+      background: rgba($color-bg-card, 1);
+    }
 
-  &.revealed::before {
-    width: 100%;
-  }
+    &--current {
+      border-color: $color-primary;
+      background: rgba($color-primary, 0.05);
 
-  &__item {
-    position: relative;
-    z-index: 1;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.3s ease;
+      .journey-orbit__period {
+        color: $color-primary;
+      }
+    }
 
-    .timeline-horizontal.revealed & {
+    .journey-orbit.revealed & {
       opacity: 1;
       transform: translateY(0);
 
       @for $i from 1 through 5 {
         &:nth-child(#{$i}) {
-          transition-delay: #{0.3 + $i * 0.15}s;
+          transition-delay: #{0.8 + $i * 0.2}s;
         }
       }
     }
+  }
 
-    // Pulse effect on current
-    &--current::after {
-      content: '';
-      position: absolute;
-      top: -4px;
-      right: -4px;
-      width: 8px;
-      height: 8px;
-      background: $color-primary;
-      border-radius: 50%;
-      animation: pulse-dot 2s ease-in-out infinite;
+  &__period {
+    font-family: $font-mono;
+    font-size: $text-xs;
+    color: $color-text-dim;
+  }
+
+  &__title {
+    font-size: $text-sm;
+    font-weight: 600;
+    color: $color-text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    @include respond-to(md) {
+      white-space: normal;
+      font-size: $text-xs;
     }
   }
-}
 
-@keyframes pulse-dot {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba($color-primary, 0.5);
-  }
-  50% {
-    transform: scale(1.2);
-    box-shadow: 0 0 0 8px rgba($color-primary, 0);
+  &__institution {
+    font-size: $text-xs;
+    color: $color-text-muted;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    @include respond-to(md) {
+      white-space: normal;
+    }
   }
 }
 

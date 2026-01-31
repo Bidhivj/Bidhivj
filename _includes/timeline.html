@@ -1,9 +1,12 @@
-<div class="timeline-horizontal">
-  {% for item in site.data.site_data.timeline %}
-  <div class="timeline-horizontal__item{% if item.current %} timeline-horizontal__item--current{% endif %}">
-    <span class="timeline-horizontal__period">{{ item.period }}</span>
-    <span class="timeline-horizontal__title">{{ item.title }}</span>
-    <span class="timeline-horizontal__institution">{{ item.institution }}</span>
+<div class="journey-orbit">
+  <canvas id="journey-canvas" class="journey-orbit__canvas"></canvas>
+  <div class="journey-orbit__labels">
+    {% for item in site.data.site_data.timeline reversed %}
+    <div class="journey-orbit__label{% if item.current %} journey-orbit__label--current{% endif %}" data-index="{{ forloop.index0 }}">
+      <span class="journey-orbit__period">{{ item.period }}</span>
+      <span class="journey-orbit__title">{{ item.title }}</span>
+      <span class="journey-orbit__institution">{{ item.institution }}</span>
+    </div>
+    {% endfor %}
   </div>
-  {% endfor %}
 </div>

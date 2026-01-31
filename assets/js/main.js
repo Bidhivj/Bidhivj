@@ -603,22 +603,22 @@ function initJourneyGlobe() {
   let animationStarted = false;
   let currentPhase = 0;
 
-  // Initial camera position - zoomed tight on India
-  globe.pointOfView({ lat: 22, lng: 82, altitude: 1.5 }, 0);
+  // Initial camera position - zoomed very tight on India
+  globe.pointOfView({ lat: 22, lng: 82, altitude: 0.8 }, 0);
 
   // Animation sequence
   function runAnimation() {
     if (!animationStarted) return;
 
     const phases = [
-      // Phase 0: Show Chaibasa (origin point) - tight on India
+      // Phase 0: Show Chaibasa (origin point) - very tight on India
       () => {
         globe.pointsData([pointsData[0]]);
         globe.labelsData([{ ...locations.chaibasa, name: 'Chaibasa\n(Origin)' }]);
         setTimeout(() => { currentPhase++; runAnimation(); }, 1500);
       },
 
-      // Phase 1: Arc to Delhi
+      // Phase 1: Arc to Delhi (University of Delhi)
       () => {
         const arc1 = {
           startLat: locations.chaibasa.lat,
@@ -626,7 +626,7 @@ function initJourneyGlobe() {
           endLat: locations.delhi.lat,
           endLng: locations.delhi.lng,
           color: ['#00d4aa', '#00d4aa'],
-          altitude: 0.05,
+          altitude: 0.03,
           stroke: 0.5,
           dashLength: 0.6,
           dashGap: 0.1,
@@ -639,14 +639,14 @@ function initJourneyGlobe() {
           globe.pointsData([pointsData[0], pointsData[1]]);
           globe.labelsData([
             { ...locations.chaibasa, name: 'Chaibasa' },
-            { ...locations.delhi, name: 'Delhi\nB.Sc.' }
+            { ...locations.delhi, name: 'Univ. of Delhi\nB.Sc. Physics' }
           ]);
         }, 1000);
 
         setTimeout(() => { currentPhase++; runAnimation(); }, 1800);
       },
 
-      // Phase 2: Arc to Chennai
+      // Phase 2: Arc to Chennai (IIT Madras)
       () => {
         const arc2 = {
           startLat: locations.delhi.lat,
@@ -654,7 +654,7 @@ function initJourneyGlobe() {
           endLat: locations.chennai.lat,
           endLng: locations.chennai.lng,
           color: ['#00d4aa', '#00d4aa'],
-          altitude: 0.06,
+          altitude: 0.04,
           stroke: 0.5,
           dashLength: 0.6,
           dashGap: 0.1,
@@ -667,8 +667,8 @@ function initJourneyGlobe() {
           globe.pointsData([pointsData[0], pointsData[1], pointsData[2]]);
           globe.labelsData([
             { ...locations.chaibasa, name: 'Chaibasa' },
-            { ...locations.delhi, name: 'Delhi' },
-            { ...locations.chennai, name: 'Chennai\nM.Sc. & JRF' }
+            { ...locations.delhi, name: 'Univ. of Delhi' },
+            { ...locations.chennai, name: 'IIT Madras\nM.Sc. & JRF' }
           ]);
         }, 1000);
 
@@ -705,38 +705,38 @@ function initJourneyGlobe() {
         setTimeout(() => { currentPhase++; runAnimation(); }, 3500);
       },
 
-      // Phase 5: ZOOM IN on Storrs - the destination
+      // Phase 5: ZOOM IN tight on Storrs - the destination
       () => {
         // Add final point and labels
         globe.pointsData(pointsData);
         globe.labelsData([
-          { ...locations.storrs, name: 'Storrs, CT\nPhD (Current)' }
+          { ...locations.storrs, name: 'UConn\nPhD Physics' }
         ]);
 
-        // Zoom in tight on Storrs
-        globe.pointOfView({ lat: 41.8, lng: -72.2, altitude: 1.8 }, 2500);
+        // Zoom in very tight on Storrs
+        globe.pointOfView({ lat: 41.8, lng: -72.2, altitude: 0.8 }, 2500);
 
-        setTimeout(() => { currentPhase++; runAnimation(); }, 3500);
+        setTimeout(() => { currentPhase++; runAnimation(); }, 4000);
       },
 
       // Phase 6: Final state - show full journey with gentle rotation
       () => {
-        // Show all labels
+        // Show all labels with universities
         globe.labelsData([
           { ...locations.chaibasa, name: 'Chaibasa' },
-          { ...locations.delhi, name: 'Delhi' },
-          { ...locations.chennai, name: 'Chennai' },
-          { ...locations.storrs, name: 'Storrs, CT' }
+          { ...locations.delhi, name: 'Univ. of Delhi' },
+          { ...locations.chennai, name: 'IIT Madras' },
+          { ...locations.storrs, name: 'UConn' }
         ]);
 
-        // Zoom out a bit to show context, gentle auto-rotate
+        // Zoom out to show full journey, gentle auto-rotate
         setTimeout(() => {
-          globe.pointOfView({ lat: 40, lng: -60, altitude: 2.5 }, 2000);
+          globe.pointOfView({ lat: 35, lng: -40, altitude: 2.8 }, 2500);
           setTimeout(() => {
             globe.controls().autoRotate = true;
-            globe.controls().autoRotateSpeed = 0.2;
-          }, 2500);
-        }, 1000);
+            globe.controls().autoRotateSpeed = 0.15;
+          }, 3000);
+        }, 1500);
       }
     ];
 

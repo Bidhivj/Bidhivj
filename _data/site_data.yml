@@ -45,20 +45,20 @@ research_interests:
 # CURRENT RESEARCH (at UConn with Prof. Santos)
 # -----------------------------------------------------------------------------
 current_research:
-  - title: "Quantum Sensing & Metrology"
-    description: "Using entangled quantum states to achieve measurement precision beyond classical limits."
+  - title: "Chaos-Enhanced Quantum Sensing"
+    description: "How classical instabilities and Lyapunov exponents translate to quantum metrological advantages."
     icon: "fa-bullseye"
 
-  - title: "Spin Squeezing"
-    description: "Generating squeezed spin states that reduce quantum noise for enhanced sensitivity."
+  - title: "Spin Squeezing & Entanglement"
+    description: "Rapid entanglement generation near unstable fixed points for quantum-enhanced precision."
     icon: "fa-compress-alt"
 
-  - title: "Time-Reversal Protocols"
-    description: "Signal amplification through time-reversed interactions for quantum-enhanced measurements."
-    icon: "fa-clock-rotate-left"
+  - title: "Quantum-Classical Correspondence"
+    description: "Connecting classical chaotic dynamics with quantum sensing protocols and scrambling."
+    icon: "fa-code-branch"
 
-  - title: "Many-Body Entanglement"
-    description: "Dynamics of entanglement in interacting spin systems for metrological applications."
+  - title: "Many-Body Spin Systems"
+    description: "Collective spin dynamics in systems with long-range interactions and instabilities."
     icon: "fa-diagram-project"
 
 # -----------------------------------------------------------------------------

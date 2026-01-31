@@ -7,25 +7,25 @@
     <div class="geometric-bg">
       <!-- Subtle grid overlay retained for depth -->
     </div>
-  </div>
 
-  <!-- Chaos parameter slider -->
-  <div class="chaos-control" aria-label="Chaos parameter control">
-    <div class="chaos-control__label">
-      <span class="chaos-control__title">Chaos</span>
-      <span class="chaos-control__value">α = <span id="alpha-value">2.0</span></span>
+    <!-- Chaos parameter slider - positioned in background layer -->
+    <div class="chaos-control" aria-label="Chaos parameter control">
+      <div class="chaos-control__label">
+        <span class="chaos-control__title">Chaos</span>
+        <span class="chaos-control__value">α = <span id="alpha-value">2.0</span></span>
+      </div>
+      <input
+        type="range"
+        id="alpha-slider"
+        class="chaos-control__slider"
+        min="0.5"
+        max="8"
+        step="0.1"
+        value="2.0"
+        aria-label="Adjust chaos parameter alpha"
+      >
+      <div class="chaos-control__hint">Click anywhere to trace an orbit</div>
     </div>
-    <input
-      type="range"
-      id="alpha-slider"
-      class="chaos-control__slider"
-      min="0.5"
-      max="8"
-      step="0.1"
-      value="2.0"
-      aria-label="Adjust chaos parameter alpha"
-    >
-    <div class="chaos-control__hint">Click anywhere to trace an orbit</div>
   </div>
 
   <div class="hero__content">

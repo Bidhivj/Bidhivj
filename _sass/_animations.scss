@@ -48,13 +48,13 @@
 
 .chaos-control {
   position: absolute;
-  top: calc(#{$nav-height} + #{$space-lg});
-  right: $space-lg;
-  z-index: 10;
+  bottom: $space-md;
+  right: $space-md;
+  z-index: 5;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: $space-sm;
+  gap: $space-xs;
   opacity: 0.5;
   transition: opacity $transition-base;
 
@@ -64,8 +64,8 @@
   }
 
   @include respond-to(md) {
-    top: calc(#{$nav-height} + #{$space-xl});
-    right: $space-xl;
+    bottom: $space-lg;
+    right: $space-lg;
   }
 
   &__label {

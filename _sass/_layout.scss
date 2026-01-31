@@ -157,7 +157,12 @@
     position: absolute;
     inset: 0;
     z-index: 0;
-    opacity: 0.3;
+
+    // Canvas and grid are faded, but controls stay visible
+    > canvas,
+    > .geometric-bg {
+      opacity: 0.3;
+    }
   }
 
   &__content {
